@@ -35,17 +35,22 @@ def write_json(file, data):
         json.dump(data, f, indent=4)
 
 def import_datagroups_from_bigip(device):
-    url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal"
-    auth = HTTPBasicAuth(device['username'], device['password'])
-    headers = {'Content-Type': 'application/json'}
-    
-    response = requests.get(url, auth=auth, headers=headers, verify=False)
-    
-    if response.status_code == 200:
-        data_groups = response.json().get('items', [])
-        return [{'name': dg['name'], 'type': dg['type'], 'records': dg.get('records', [])} for dg in data_groups]
-    else:
+    try:
+        url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal"
+        auth = HTTPBasicAuth(device['username'], device['password'])
+        headers = {'Content-Type': 'application/json'}
+        
+        response = requests.get(url, auth=auth, headers=headers, verify=False)
+        
+        if response.status_code == 200:
+            data_groups = response.json().get('items', [])
+            return [{'name': dg['name'], 'type': dg['type'], 'records': dg.get('records', [])} for dg in data_groups]
+        else:
+            return None
+    except KeyError as e:
+        flash(f'Missing key in device configuration: {e}')
         return None
+
 
 def is_device_reachable(address):
     try:
@@ -157,6 +162,7 @@ def import_datagroups():
         return redirect(url_for('index'))
     devices = read_json(DEVICES_FILE)
     return render_template('import_datagroups.html', devices=devices)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

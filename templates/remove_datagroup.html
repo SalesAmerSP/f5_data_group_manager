@@ -1,10 +1,16 @@
-{% extends "base.html" %}
-
-{% block content %}
-<h2>Remove Data Group</h2>
-<form method="post" action="{{ url_for('remove_datagroup') }}">
-    <label for="name">Data Group Name:</label>
-    <input type="text" id="name" name="name" required>
-    <button type="submit">Remove Data Group</button>
-</form>
-{% endblock %}
+@app.route('/remove_datagroup', methods=['GET', 'POST'])
+def remove_datagroup():
+    datagroups = read_json(DATAGROUPS_FILE)
+    if request.method == 'POST':
+        name = request.form['name']
+        confirm = request.form.get('confirm')
+        
+        if confirm:
+            datagroups = [dg for dg in datagroups if dg['name'] != name]
+            write_json(DATAGROUPS_FILE, datagroups)
+            flash('Data group removed successfully!')
+        else:
+            flash('Please confirm the removal of the data group.')
+        
+        return redirect(url_for('index'))
+    return render_template('remove_datagroup.html', datagroups=datagroups)
