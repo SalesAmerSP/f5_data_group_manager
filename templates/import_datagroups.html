@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Import Data Groups from BIG-IP</h2>
+<form method="post" action="{{ url_for('import_datagroups') }}">
+    <label for="device">Select Device:</label>
+    <select id="device" name="device" required>
+        {% for device in devices %}
+        <option value="{{ device.name }}">{{ device.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Import Data Groups</button>
+</form>
+{% endblock %}
