@@ -1,13 +1,13 @@
 #! /usr/bin/env python3
 
-from requests.auth import HTTPBasicAuth
-from flask import Flask, render_template, request, redirect, url_for, flash
-import requests
 import json
 import os
+import requests
+from flask import Flask, render_template, request, redirect, url_for, flash
+from requests.auth import HTTPBasicAuth
 import urllib3
 
-# Disable SSL self-signed certificates 
+# Disable SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
@@ -47,6 +47,13 @@ def import_datagroups_from_bigip(device):
     else:
         return None
 
+def is_device_reachable(address):
+    try:
+        response = requests.get(f"https://{address}", verify=False, timeout=5)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
 @app.route('/')
 def index():
     devices = read_json(DEVICES_FILE)
@@ -58,10 +65,17 @@ def add_device():
     if request.method == 'POST':
         name = request.form['name']
         address = request.form['address']
-        devices = read_json(DEVICES_FILE)
-        devices.append({'name': name, 'address': address})
-        write_json(DEVICES_FILE, devices)
-        flash('Device added successfully!')
+        username = request.form['username']
+        password = request.form['password']
+        
+        if is_device_reachable(address):
+            devices = read_json(DEVICES_FILE)
+            devices.append({'name': name, 'address': address, 'username': username, 'password': password})
+            write_json(DEVICES_FILE, devices)
+            flash('Device added successfully!')
+        else:
+            flash('Failed to reach the device. Please check the address and try again.')
+        
         return redirect(url_for('index'))
     return render_template('add_device.html')
 
