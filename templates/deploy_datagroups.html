@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Deploy Data Group</h2>
+<form method="post" action="{{ url_for('deploy_datagroups') }}">
+    <label for="datagroup">Select Data Group to Deploy:</label>
+    <select id="datagroup" name="datagroup" required>
+        <option value="" disabled selected>Select a Data Group</option>
+        {% for datagroup in datagroups %}
+        <option value="{{ datagroup.name }}">{{ datagroup.name }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+    <label>Select BIG-IPs to Deploy To:</label>
+    <br>
+    {% for device in devices %}
+    <input type="checkbox" id="device_{{ device.name }}" name="devices" value="{{ device.name }}">
+    <label for="device_{{ device.name }}">{{ device.name }} ({{ device.address }})</label><br>
+    {% endfor %}
+    <br>
+    <button type="submit">Deploy Data Group</button>
+</form>
+{% endblock %}

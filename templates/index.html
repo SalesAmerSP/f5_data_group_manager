@@ -1,17 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Devices</h2>
-<ul>
-    {% for device in devices %}
-    <li>{{ device.name }} ({{ device.address }})</li>
-    {% endfor %}
-</ul>
-
 <h2>Data Groups</h2>
-<ul>
-    {% for datagroup in datagroups %}
-    <li>{{ datagroup.name }} ({{ datagroup.type }}): {{ datagroup.records|join(', ') }}</li>
-    {% endfor %}
-</ul>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Records Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for datagroup in datagroups %}
+        <tr>
+            <td>{{ datagroup.name }}</td>
+            <td>{{ datagroup.type }}</td>
+            <td>{{ datagroup.description }}</td>
+            <td>{{ datagroup.records|length }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

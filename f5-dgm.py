@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-
 import json
 import os
 import requests
@@ -49,7 +48,12 @@ def import_datagroups_from_bigip(device):
         
         if response.status_code == 200:
             data_groups = response.json().get('items', [])
-            return [{'name': dg['name'], 'type': dg['type'], 'records': dg.get('records', [])} for dg in data_groups]
+            return [{
+                'name': dg['name'],
+                'type': dg['type'],
+                'description': dg.get('description', 'N/A'),
+                'records': dg.get('records', [])
+            } for dg in data_groups]
         else:
             flash('Failed to retrieve data groups from the device.')
             return None
@@ -171,7 +175,12 @@ def import_datagroups():
             data_groups = import_datagroups_from_bigip(device)
             if data_groups is not None:
                 current_datagroups = read_json(DATAGROUPS_FILE)
-                current_datagroups.extend(data_groups)
+                for dg in data_groups:
+                    existing_dg = next((cdg for cdg in current_datagroups if cdg['name'] == dg['name']), None)
+                    if existing_dg:
+                        existing_dg.update(dg)
+                    else:
+                        current_datagroups.append(dg)
                 write_json(DATAGROUPS_FILE, current_datagroups)
                 flash('Data groups imported successfully!')
             else:
@@ -182,6 +191,71 @@ def import_datagroups():
         return redirect(url_for('index'))
     devices = read_json(DEVICES_FILE)
     return render_template('import_datagroups.html', devices=devices)
+
+@app.route('/deploy_datagroups', methods=['GET', 'POST'])
+def deploy_datagroups():
+    devices = read_json(DEVICES_FILE)
+    datagroups = read_json(DATAGROUPS_FILE)
+    
+    if request.method == 'POST':
+        selected_datagroup = request.form['datagroup']
+        selected_devices = request.form.getlist('devices')
+        
+        datagroup = next((dg for dg in datagroups if dg['name'] == selected_datagroup), None)
+        
+        if not datagroup:
+            flash('Selected data group not found.')
+            return redirect(url_for('deploy_datagroups'))
+
+        failed_devices = []
+        for device_name in selected_devices:
+            device = next((d for d in devices if d['name'] == device_name), None)
+            if device:
+                success = deploy_datagroup_to_device(device, datagroup)
+                if not success:
+                    failed_devices.append(device_name)
+        
+        if failed_devices:
+            flash(f'Failed to deploy to devices: {", ".join(failed_devices)}')
+        else:
+            flash('Data group deployed successfully to all selected devices!')
+        
+        return redirect(url_for('index'))
+    
+    return render_template('deploy_datagroups.html', devices=devices, datagroups=datagroups)
+
+def deploy_datagroup_to_device(device, datagroup):
+    url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal"
+    decrypted_password = decrypt_password(device['password'])
+    if not decrypted_password:
+        flash(f'Failed to decrypt the password for device: {device["name"]}')
+        return False
+    
+    auth = HTTPBasicAuth(device['username'], decrypted_password)
+    headers = {'Content-Type': 'application/json'}
+    
+    data = {
+        'name': datagroup['name'],
+        'type': datagroup['type'],
+        'records': [{'name': record['key'], 'data': record['value']} for record in datagroup['records']]
+    }
+    
+    response = requests.post(url, auth=auth, headers=headers, json=data, verify=False)
+    
+    if response.status_code in [200, 201]:
+        return True
+    else:
+        print(f"Failed to deploy to {device['name']}: {response.text}")
+        return False
+
+@app.route('/flush_datagroups', methods=['POST'])
+def flush_datagroups():
+    try:
+        write_json(DATAGROUPS_FILE, [])
+        flash('Local data-group cache flushed successfully!')
+    except Exception as e:
+        flash(f'Error flushing data-group cache: {str(e)}')
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)

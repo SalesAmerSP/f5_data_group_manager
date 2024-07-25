@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import cryptography
 from cryptography.fernet import Fernet
 
 def load_key():
