@@ -42,7 +42,7 @@ form label {
   font-weight: bold;
 }
 
-form input {
+form input, form select {
   width: 100%;
   padding: 8px;
   margin-bottom: 10px;
@@ -68,4 +68,14 @@ ul.messages {
   padding: 0;
   margin: 0 0 20px 0;
   color: green;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  width: 50px;  /* Adjust the size as needed */
+  margin-right: 10px;
 }

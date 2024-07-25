@@ -4,13 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F5 Data Groups Management</title>
-    <link rel="stylesheet" href
-    ="/static/css/styles.css">
-  </head>
-  <body>
-      <div class="container">
-          <h1>F5 Data Groups Management</h1>
-          <nav>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        .logo img {
+            width: 50px;  /* Adjust the size as needed */
+            margin-right: 10px;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin-right: 10px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/f5_logo.png') }}" alt="F5 Logo">
+            <h1>F5 Data Groups Management</h1>
+        </div>
+        <nav>
             <ul>
                 <li><a href="{{ url_for('index') }}">Home</a></li>
                 <li><a href="{{ url_for('add_device') }}">Add Device</a></li>
@@ -20,20 +45,19 @@
                 <li><a href="{{ url_for('update_datagroup') }}">Update Data Group</a></li>
                 <li><a href="{{ url_for('import_datagroups') }}">Import Data Groups</a></li>
             </ul>
-          </nav>
-          <div class="content">
-              {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                  <ul class="messages">
-                    {% for message in messages %}
-                      <li>{{ message }}</li>
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              {% endwith %}
-              {% block content %}{% endblock %}
-          </div>
-      </div>
-  </body>
-  </html>
-  
+        </nav>
+        <div class="content">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <ul class="messages">
+                  {% for message in messages %}
+                    <li>{{ message }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</body>
+</html>

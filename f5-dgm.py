@@ -6,6 +6,7 @@ import requests
 from flask import Flask, render_template, request, redirect, url_for, flash
 from requests.auth import HTTPBasicAuth
 import urllib3
+from encryption import encrypt_password, decrypt_password  # Correctly import encryption functions
 
 # Disable SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -37,7 +38,11 @@ def write_json(file, data):
 def import_datagroups_from_bigip(device):
     try:
         url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal"
-        auth = HTTPBasicAuth(device['username'], device['password'])
+        decrypted_password = decrypt_password(device['password'])
+        if not decrypted_password:
+            flash('Failed to decrypt the password for device: ' + device['name'])
+            return None
+        auth = HTTPBasicAuth(device['username'], decrypted_password)
         headers = {'Content-Type': 'application/json'}
         
         response = requests.get(url, auth=auth, headers=headers, verify=False)
@@ -46,11 +51,11 @@ def import_datagroups_from_bigip(device):
             data_groups = response.json().get('items', [])
             return [{'name': dg['name'], 'type': dg['type'], 'records': dg.get('records', [])} for dg in data_groups]
         else:
+            flash('Failed to retrieve data groups from the device.')
             return None
     except KeyError as e:
         flash(f'Missing key in device configuration: {e}')
         return None
-
 
 def is_device_reachable(address):
     try:
@@ -75,7 +80,8 @@ def add_device():
         
         if is_device_reachable(address):
             devices = read_json(DEVICES_FILE)
-            devices.append({'name': name, 'address': address, 'username': username, 'password': password})
+            encrypted_password = encrypt_password(password)  # Encrypt the password before saving
+            devices.append({'name': name, 'address': address, 'username': username, 'password': encrypted_password})
             write_json(DEVICES_FILE, devices)
             flash('Device added successfully!')
         else:
@@ -106,7 +112,11 @@ def add_datagroup():
     if request.method == 'POST':
         name = request.form['name']
         type = request.form['type']
-        records = request.form.getlist('records')
+        records = []
+        keys = request.form.getlist('records_key')
+        values = request.form.getlist('records_value')
+        for key, value in zip(keys, values):
+            records.append({'key': key, 'value': value})
         datagroups = read_json(DATAGROUPS_FILE)
         datagroups.append({'name': name, 'type': type, 'records': records})
         write_json(DATAGROUPS_FILE, datagroups)
@@ -116,21 +126,31 @@ def add_datagroup():
 
 @app.route('/remove_datagroup', methods=['GET', 'POST'])
 def remove_datagroup():
+    datagroups = read_json(DATAGROUPS_FILE)
     if request.method == 'POST':
         name = request.form['name']
-        datagroups = read_json(DATAGROUPS_FILE)
-        datagroups = [dg for dg in datagroups if dg['name'] != name]
-        write_json(DATAGROUPS_FILE, datagroups)
-        flash('Data group removed successfully!')
+        confirm = request.form.get('confirm')
+        
+        if confirm:
+            datagroups = [dg for dg in datagroups if dg['name'] != name]
+            write_json(DATAGROUPS_FILE, datagroups)
+            flash('Data group removed successfully!')
+        else:
+            flash('Please confirm the removal of the data group.')
+        
         return redirect(url_for('index'))
-    return render_template('remove_datagroup.html')
+    return render_template('remove_datagroup.html', datagroups=datagroups)
 
 @app.route('/update_datagroup', methods=['GET', 'POST'])
 def update_datagroup():
+    datagroups = read_json(DATAGROUPS_FILE)
     if request.method == 'POST':
         name = request.form['name']
-        new_records = request.form.getlist('records')
-        datagroups = read_json(DATAGROUPS_FILE)
+        new_records = []
+        keys = request.form.getlist('records_key')
+        values = request.form.getlist('records_value')
+        for key, value in zip(keys, values):
+            new_records.append({'key': key, 'value': value})
         for dg in datagroups:
             if dg['name'] == name:
                 dg['records'] = new_records
@@ -138,7 +158,7 @@ def update_datagroup():
         write_json(DATAGROUPS_FILE, datagroups)
         flash('Data group updated successfully!')
         return redirect(url_for('index'))
-    return render_template('update_datagroup.html')
+    return render_template('update_datagroup.html', datagroups=datagroups)
 
 @app.route('/import_datagroups', methods=['GET', 'POST'])
 def import_datagroups():
@@ -162,7 +182,6 @@ def import_datagroups():
         return redirect(url_for('index'))
     devices = read_json(DEVICES_FILE)
     return render_template('import_datagroups.html', devices=devices)
-
 
 if __name__ == '__main__':
     app.run(debug=True)

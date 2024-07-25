@@ -2,6 +2,9 @@
 datagroups.json
 devices.json
 
+# local secret key file
+secret.key
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

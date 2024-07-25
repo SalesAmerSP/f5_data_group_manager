@@ -3,10 +3,58 @@
 {% block content %}
 <h2>Update Data Group</h2>
 <form method="post" action="{{ url_for('update_datagroup') }}">
-    <label for="name">Data Group Name:</label>
-    <input type="text" id="name" name="name" required>
-    <label for="records">New Data Group Records (comma separated):</label>
-    <input type="text" id="records" name="records" required>
+    <label for="name">Select Data Group to Update:</label>
+    <select id="name" name="name" required onchange="loadRecords(this.value)">
+        <option value="" disabled selected>Select a Data Group</option>
+        {% for datagroup in datagroups %}
+        <option value="{{ datagroup.name }}">{{ datagroup.name }}</option>
+        {% endfor %}
+    </select>
+    
+    <div id="records-container">
+        <label for="records">Data Group Records:</label>
+        <!-- Records will be dynamically loaded here -->
+    </div>
+    <button type="button" onclick="addRecord()">Add Record</button>
+    <br><br>
     <button type="submit">Update Data Group</button>
 </form>
+
+<script>
+const datagroups = {{ datagroups|tojson }};
+
+function addRecord() {
+    const container = document.getElementById('records-container');
+    const newRecord = document.createElement('div');
+    newRecord.className = 'record';
+    newRecord.innerHTML = `
+        <input type="text" name="records_key" class="record-key" placeholder="Key" required>
+        <input type="text" name="records_value" class="record-value" placeholder="Value" required>
+    `;
+    container.appendChild(newRecord);
+}
+
+function loadRecords(datagroupName) {
+    const container = document.getElementById('records-container');
+    container.innerHTML = '';  // Clear existing records
+    const datagroup = datagroups.find(dg => dg.name === datagroupName);
+    if (datagroup) {
+        datagroup.records.forEach(record => {
+            const recordElement = document.createElement('div');
+            recordElement.className = 'record';
+            recordElement.innerHTML = `
+                <input type="text" name="records_key" class="record-key" value="${record.key}" placeholder="Key" required>
+                <input type="text" name="records_value" class="record-value" value="${record.value}" placeholder="Value" required>
+            `;
+            container.appendChild(recordElement);
+        });
+    }
+}
+
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('record-key') || e.target.classList.contains('record-value')) {
+        e.target.style.backgroundColor = 'yellow';
+    }
+});
+</script>
 {% endblock %}

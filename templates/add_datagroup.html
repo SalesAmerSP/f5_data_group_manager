@@ -5,10 +5,42 @@
 <form method="post" action="{{ url_for('add_datagroup') }}">
     <label for="name">Data Group Name:</label>
     <input type="text" id="name" name="name" required>
+    
     <label for="type">Data Group Type:</label>
-    <input type="text" id="type" name="type" required>
-    <label for="records">Data Group Records (comma separated):</label>
-    <input type="text" id="records" name="records" required>
+    <select id="type" name="type" required>
+        <option value="string">String</option>
+        <option value="integer">Integer</option>
+        <option value="address">Address</option>
+    </select>
+    
+    <div id="records-container">
+        <label for="records">Data Group Records:</label>
+        <div class="record">
+            <input type="text" name="records_key" class="record-key" placeholder="Key" required>
+            <input type="text" name="records_value" class="record-value" placeholder="Value" required>
+        </div>
+    </div>
+    <button type="button" onclick="addRecord()">Add Record</button>
+    <br><br>
     <button type="submit">Add Data Group</button>
 </form>
+
+<script>
+function addRecord() {
+    const container = document.getElementById('records-container');
+    const newRecord = document.createElement('div');
+    newRecord.className = 'record';
+    newRecord.innerHTML = `
+        <input type="text" name="records_key" class="record-key" placeholder="Key" required>
+        <input type="text" name="records_value" class="record-value" placeholder="Value" required>
+    `;
+    container.appendChild(newRecord);
+}
+
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('record-key') || e.target.classList.contains('record-value')) {
+        e.target.style.backgroundColor = 'yellow';
+    }
+});
+</script>
 {% endblock %}
