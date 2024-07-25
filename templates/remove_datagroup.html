@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Remove Data Group</h2>
+<form method="post" action="{{ url_for('remove_datagroup') }}">
+    <label for="name">Data Group Name:</label>
+    <input type="text" id="name" name="name" required>
+    <button type="submit">Remove Data Group</button>
+</form>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Add Data Group</h2>
+<form method="post" action="{{ url_for('add_datagroup') }}">
+    <label for="name">Data Group Name:</label>
+    <input type="text" id="name" name="name" required>
+    <label for="type">Data Group Type:</label>
+    <input type="text" id="type" name="type" required>
+    <label for="records">Data Group Records (comma separated):</label>
+    <input type="text" id="records" name="records" required>
+    <button type="submit">Add Data Group</button>
+</form>
+{% endblock %}

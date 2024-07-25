@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Update Data Group</h2>
+<form method="post" action="{{ url_for('update_datagroup') }}">
+    <label for="name">Data Group Name:</label>
+    <input type="text" id="name" name="name" required>
+    <label for="records">New Data Group Records (comma separated):</label>
+    <input type="text" id="records" name="records" required>
+    <button type="submit">Update Data Group</button>
+</form>
+{% endblock %}
