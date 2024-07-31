@@ -5,29 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>F5 Data Groups Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <style>
-        .logo {
-            display: flex;
-            align-items: center;
-        }
-        .logo img {
-            width: 50px;  /* Adjust the size as needed */
-            margin-right: 10px;
-        }
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        nav ul li {
-            display: inline;
-            margin-right: 10px;
-        }
-        nav ul li a {
-            text-decoration: none;
-            color: #007BFF;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -37,14 +14,28 @@
         </div>
         <nav>
             <ul>
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                <li><a href="{{ url_for('add_device') }}">Add Device</a></li>
-                <li><a href="{{ url_for('remove_device') }}">Remove Device</a></li>
-                <li><a href="{{ url_for('add_datagroup') }}">Add Data Group</a></li>
-                <li><a href="{{ url_for('remove_datagroup') }}">Remove Data Group</a></li>
+                <li><a href="{{ url_for('index') }}">Datagroups</a></li>
+                <li><a href="{{ url_for('big_ips') }}">BIG-IPs</a></li>
+                <li class="dropdown">
+                    <a href="javascript:void(0)">Import</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('import_datagroup_csv') }}">Import Data Group from CSV</a>
+                        <a href="{{ url_for('import_values_csv') }}">Import Values into Data Group from CSV</a>
+                        <a href="{{ url_for('import_datagroup_json') }}">Import Data Group from JSON</a>
+                        <a href="{{ url_for('import_values_json') }}">Import Data Group Values from JSON</a>
+                        <a href="{{ url_for('import_datagroups_from_bigip') }}">Import Data Groups from BIG-IP</a>
+                    </div>
+                </li>
+                <li class="dropdown">
+                    <a href="javascript:void(0)">Export</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('export_datagroup_csv') }}">Export Data Group to CSV</a>
+                        <a href="{{ url_for('export_datagroup_json') }}">Export Data Group to JSON</a>
+                    </div>
+                </li>
+                <li><a href="{{ url_for('remove_datagroup') }}">Remove Data Group from BIG-IPs</a></li>
                 <li><a href="{{ url_for('update_datagroup') }}">Update Data Group</a></li>
-                <li><a href="{{ url_for('import_datagroups') }}">Import Data Groups</a></li>
-                <li><a href="{{ url_for('deploy_datagroups') }}">Deploy Data Groups</a></li>
+                <li><a href="{{ url_for('deploy_datagroups') }}">Deploy Data Groups to BIG-IPs</a></li>
                 <li>
                     <form action="{{ url_for('flush_datagroups') }}" method="post" style="display:inline;">
                         <button type="submit" style="background:none;border:none;color:#007BFF;text-decoration:underline;cursor:pointer;">Flush Data Groups</button>

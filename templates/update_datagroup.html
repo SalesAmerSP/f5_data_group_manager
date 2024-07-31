@@ -3,58 +3,45 @@
 {% block content %}
 <h2>Update Data Group</h2>
 <form method="post" action="{{ url_for('update_datagroup') }}">
-    <label for="name">Select Data Group to Update:</label>
-    <select id="name" name="name" required onchange="loadRecords(this.value)">
+    <label for="name">Data Group Name:</label>
+    <select id="name" name="name" required onchange="this.form.submit()">
         <option value="" disabled selected>Select a Data Group</option>
         {% for datagroup in datagroups %}
-        <option value="{{ datagroup.name }}">{{ datagroup.name }}</option>
+        <option value="{{ datagroup.name }}" {% if selected_datagroup and datagroup.name == selected_datagroup.name %}selected{% endif %}>{{ datagroup.name }}</option>
         {% endfor %}
     </select>
-    
-    <div id="records-container">
-        <label for="records">Data Group Records:</label>
-        <!-- Records will be dynamically loaded here -->
+    <br><br>
+    {% if selected_datagroup %}
+    <label for="records">Records:</label>
+    <div id="records">
+        {% for record in selected_datagroup.records %}
+        <div class="record">
+            <input type="text" name="records_name" value="{{ record.name }}" required>
+            <input type="text" name="records_data" value="{{ record.data }}" required>
+            <button type="button" onclick="removeRecord(this)">Delete</button>
+        </div>
+        {% endfor %}
     </div>
     <button type="button" onclick="addRecord()">Add Record</button>
     <br><br>
     <button type="submit">Update Data Group</button>
+    {% endif %}
 </form>
 
 <script>
-const datagroups = {{ datagroups|tojson }};
-
 function addRecord() {
-    const container = document.getElementById('records-container');
-    const newRecord = document.createElement('div');
-    newRecord.className = 'record';
-    newRecord.innerHTML = `
-        <input type="text" name="records_key" class="record-key" placeholder="Key" required>
-        <input type="text" name="records_value" class="record-value" placeholder="Value" required>
+    const recordDiv = document.createElement('div');
+    recordDiv.className = 'record';
+    recordDiv.innerHTML = `
+        <input type="text" name="records_name" placeholder="Name" required>
+        <input type="text" name="records_data" placeholder="Data" required>
+        <button type="button" onclick="removeRecord(this)">Delete</button>
     `;
-    container.appendChild(newRecord);
+    document.getElementById('records').appendChild(recordDiv);
 }
 
-function loadRecords(datagroupName) {
-    const container = document.getElementById('records-container');
-    container.innerHTML = '';  // Clear existing records
-    const datagroup = datagroups.find(dg => dg.name === datagroupName);
-    if (datagroup) {
-        datagroup.records.forEach(record => {
-            const recordElement = document.createElement('div');
-            recordElement.className = 'record';
-            recordElement.innerHTML = `
-                <input type="text" name="records_key" class="record-key" value="${record.key}" placeholder="Key" required>
-                <input type="text" name="records_value" class="record-value" value="${record.value}" placeholder="Value" required>
-            `;
-            container.appendChild(recordElement);
-        });
-    }
+function removeRecord(button) {
+    button.parentElement.remove();
 }
-
-document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('record-key') || e.target.classList.contains('record-value')) {
-        e.target.style.backgroundColor = 'yellow';
-    }
-});
 </script>
 {% endblock %}

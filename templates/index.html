@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+
 <h2>Data Groups</h2>
-<table>
+<table class="datagroups-table">
     <thead>
         <tr>
             <th>Name</th>
@@ -21,5 +22,10 @@
         </tr>
         {% endfor %}
     </tbody>
+    <tfoot>
+        <tr>
+            <a href="{{ url_for('add_datagroup') }}" class="button">Add Data Group</a></li>
+        </tr>
+    </tfoot>
 </table>
 {% endblock %}

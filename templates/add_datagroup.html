@@ -5,19 +5,21 @@
 <form method="post" action="{{ url_for('add_datagroup') }}">
     <label for="name">Data Group Name:</label>
     <input type="text" id="name" name="name" required>
-    
+    <br><br>
     <label for="type">Data Group Type:</label>
     <select id="type" name="type" required>
+        <option value="" disabled selected>Select a Type</option>
         <option value="string">String</option>
         <option value="integer">Integer</option>
         <option value="address">Address</option>
     </select>
-    
-    <div id="records-container">
-        <label for="records">Data Group Records:</label>
+    <br><br>
+    <label for="records">Records:</label>
+    <div id="records">
         <div class="record">
-            <input type="text" name="records_key" class="record-key" placeholder="Key" required>
-            <input type="text" name="records_value" class="record-value" placeholder="Value" required>
+            <input type="text" name="records_name" placeholder="Name" required>
+            <input type="text" name="records_data" placeholder="Data" required>
+            <button type="button" onclick="removeRecord(this)">Delete</button>
         </div>
     </div>
     <button type="button" onclick="addRecord()">Add Record</button>
@@ -27,20 +29,18 @@
 
 <script>
 function addRecord() {
-    const container = document.getElementById('records-container');
-    const newRecord = document.createElement('div');
-    newRecord.className = 'record';
-    newRecord.innerHTML = `
-        <input type="text" name="records_key" class="record-key" placeholder="Key" required>
-        <input type="text" name="records_value" class="record-value" placeholder="Value" required>
+    const recordDiv = document.createElement('div');
+    recordDiv.className = 'record';
+    recordDiv.innerHTML = `
+        <input type="text" name="records_name" placeholder="Name" required>
+        <input type="text" name="records_data" placeholder="Data" required>
+        <button type="button" onclick="removeRecord(this)">Delete</button>
     `;
-    container.appendChild(newRecord);
+    document.getElementById('records').appendChild(recordDiv);
 }
 
-document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('record-key') || e.target.classList.contains('record-value')) {
-        e.target.style.backgroundColor = 'yellow';
-    }
-});
+function removeRecord(button) {
+    button.parentElement.remove();
+}
 </script>
 {% endblock %}

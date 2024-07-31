@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Export Data Group to {{ export_type }}</h2>
+<form method="post" action="{{ url_for('export_datagroup_' + export_type.lower()) }}">
+    <label for="datagroups">Select Data Groups:</label>
+    <select id="datagroups" name="datagroups" multiple required>
+        {% for datagroup in datagroups %}
+        <option value="{{ datagroup.name }}">{{ datagroup.name }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+    <button type="submit">Export</button>
+</form>
+{% endblock %}

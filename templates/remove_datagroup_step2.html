@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Select Data Groups to Delete</h2>
+<form method="post" action="{{ url_for('remove_datagroup') }}">
+    <input type="hidden" name="step" value="2">
+    {% for device in devices %}
+    <input type="hidden" name="devices" value="{{ device }}">
+    {% endfor %}
+    <label>Select Data Groups:</label>
+    <br>
+    {% for datagroup in datagroups %}
+    <div class="datagroup-checkbox">
+        <input type="checkbox" id="datagroup_{{ datagroup }}" name="datagroups" value="{{ datagroup }}">
+        <label for="datagroup_{{ datagroup }}">{{ datagroup }}</label>
+    </div>
+    {% endfor %}
+    <br>
+    <button type="submit">Delete Selected Data Groups</button>
+</form>
+{% endblock %}

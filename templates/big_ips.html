@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>BIG-IP Devices</h2>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Actions</th>
+    </tr>
+    {% for device in devices %}
+    <tr>
+        <td>{{ device.name }}</td>
+        <td>{{ device.address }}</td>
+        <td>
+            <form action="{{ url_for('remove_device') }}" method="post" style="display:inline;" onsubmit="return confirmDeletion('{{ device.name }}');">
+                <input type="hidden" name="device_name" value="{{ device.name }}">
+                <button type="submit">Remove</button>
+            </form>
+            <form action="{{ url_for('update_device_credentials') }}" method="get" style="display:inline;">
+                <input type="hidden" name="device_name" value="{{ device.name }}">
+                <button type="submit">Update Credentials</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="{{ url_for('add_device') }}" class="button">Add Device</a>
+
+<script>
+function confirmDeletion(deviceName) {
+    return confirm('Are you sure you want to delete the device: ' + deviceName + '?');
+}
+</script>
+{% endblock %}

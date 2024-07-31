@@ -1,23 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Deploy Data Group</h2>
+<h2>Deploy Data Groups</h2>
 <form method="post" action="{{ url_for('deploy_datagroups') }}">
-    <label for="datagroup">Select Data Group to Deploy:</label>
-    <select id="datagroup" name="datagroup" required>
-        <option value="" disabled selected>Select a Data Group</option>
-        {% for datagroup in datagroups %}
-        <option value="{{ datagroup.name }}">{{ datagroup.name }}</option>
-        {% endfor %}
-    </select>
-    <br><br>
-    <label>Select BIG-IPs to Deploy To:</label>
+    <label>Select Devices:</label>
     <br>
     {% for device in devices %}
-    <input type="checkbox" id="device_{{ device.name }}" name="devices" value="{{ device.name }}">
-    <label for="device_{{ device.name }}">{{ device.name }} ({{ device.address }})</label><br>
+    <div class="device-checkbox">
+        <input type="checkbox" id="device_{{ device.name }}" name="devices" value="{{ device.name }}">
+        <label for="device_{{ device.name }}">{{ device.name }} ({{ device.address }})</label>
+    </div>
     {% endfor %}
     <br>
-    <button type="submit">Deploy Data Group</button>
+    <label>Select Data Groups:</label>
+    <br>
+    {% for datagroup in datagroups %}
+    <div class="datagroup-checkbox">
+        <input type="checkbox" id="datagroup_{{ datagroup.name }}" name="datagroups" value="{{ datagroup.name }}">
+        <label for="datagroup_{{ datagroup.name }}">{{ datagroup.name }}</label>
+    </div>
+    {% endfor %}
+    <br>
+    <button type="submit">Deploy Selected Data Groups</button>
 </form>
 {% endblock %}
