@@ -415,9 +415,102 @@ def update_device_credentials():
 @app.route('/import_from_file', methods=['GET', 'POST'])
 def import_from_file():
     if request.method == 'POST':
-        # Handle file upload and import
-        pass
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+
+            valid_csv, message_csv = lint_datagroup_csv(file_path)
+            if not valid_csv:
+                flash(f'CSV Linting Error: {message_csv}')
+                return redirect(request.url)
+
+            new_datagroups = []
+            try:
+                with open(file_path, newline='') as csvfile:
+                    reader = csv.reader(csvfile)
+                    header = next(reader)
+
+                    if header != ["Data Group", "Type", "Name", "Data"]:
+                        flash('CSV header must be "Data Group", "Type", "Name", "Data"')
+                        return redirect(request.url)
+
+                    current_datagroup = None
+                    for row in reader:
+                        if len(row) != 4:
+                            flash('Each row must have exactly four values: Data Group, Type, Name, Data')
+                            return redirect(request.url)
+
+                        dg_name, dg_type, record_name, record_data = row
+
+                        if dg_type not in ["string", "integer", "address"]:
+                            flash('Data Group type must be "string", "integer", or "address"')
+                            return redirect(request.url)
+
+                        if dg_type == "integer":
+                            try:
+                                int(record_name)
+                            except ValueError:
+                                flash('For Data Group type "integer", all Name values must be integers')
+                                return redirect(request.url)
+
+                        if not current_datagroup or current_datagroup['name'] != dg_name:
+                            if current_datagroup:
+                                new_datagroups.append(current_datagroup)
+                            current_datagroup = {'name': dg_name, 'type': dg_type, 'records': []}
+                        current_datagroup['records'].append({'name': record_name, 'data': record_data})
+
+                    if current_datagroup:
+                        new_datagroups.append(current_datagroup)
+
+                datagroups = read_json(DATAGROUPS_FILE)
+                for new_dg in new_datagroups:
+                    existing_dg = next((dg for dg in datagroups if dg['name'] == new_dg['name']), None)
+                    if existing_dg:
+                        existing_dg['records'].extend(new_dg['records'])
+                    else:
+                        datagroups.append(new_dg)
+
+                write_json(DATAGROUPS_FILE, datagroups)
+                flash('Data groups imported successfully from CSV!')
+
+            except Exception as e:
+                flash(f'Error processing CSV file: {str(e)}')
+                return redirect(request.url)
+
+            return redirect(url_for('index'))
+
     return render_template('import_from_file.html')
+
+def lint_datagroup_csv(file_path):
+    try:
+        with open(file_path, newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            header = next(reader)
+            if header != ["Data Group", "Type", "Name", "Data"]:
+                return False, 'Header must have exactly four columns: "Data Group", "Type", "Name", "Data"'
+            for row in reader:
+                if len(row) != 4:
+                    return False, "Each row must have exactly four values"
+                dg_type = row[1]
+                if dg_type not in ["string", "integer", "address"]:
+                    return False, 'Data Group type must be "string", "integer", or "address"'
+                if dg_type == "integer":
+                    try:
+                        int(row[2])
+                    except ValueError:
+                        return False, 'For Data Group type "integer", all Name values must be integers'
+        return True, "CSV format is correct"
+    except Exception as e:
+        return False, str(e)
+
 
 @app.route('/import_from_url', methods=['GET', 'POST'])
 def import_from_url():
@@ -441,15 +534,15 @@ def export_datagroup_csv():
                 if datagroup['name'] in selected_datagroups:
                     for record in datagroup['records']:
                         writer.writerow([datagroup['name'], datagroup['type'], record['name'], record['data']])
-            wrapper.flush()
-            wrapper.detach()
-            csvfile.seek(0)
-            return send_file(
-                csvfile,
-                mimetype='text/csv',
-                as_attachment=True,
-                download_name=f'datagroup-{datagroup['name']}-export-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.csv'
-            )
+                wrapper.flush()
+                wrapper.detach()
+                csvfile.seek(0)
+                return send_file(
+                    csvfile,
+                    mimetype='text/csv',
+                    as_attachment=True,
+                    download_name=f'datagroup-{datagroup['name']}-export-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.csv'
+                )
     return render_template('export_datagroup.html', datagroups=datagroups, export_type='CSV')
 
 @app.route('/export_datagroup_json', methods=['GET', 'POST'])
@@ -458,17 +551,18 @@ def export_datagroup_json():
     if request.method == 'POST':
         selected_datagroup = request.form.getlist('datagroup')
         if selected_datagroup:
-            export_data = [dg for dg in datagroups if dg['name'] in selected_datagroup]
-            if export_data:
-                jsonfile = BytesIO()
-                jsonfile.write(json.dumps(export_data).encode('utf-8'))
-                jsonfile.seek(0)
-                return send_file(
-                    jsonfile,
-                    mimetype='application/json',
-                    as_attachment=True,
-                    download_name=f'datagroup-{selected_datagroup}-export-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.json'
-                )
+            for current_datagroup in selected_datagroup:
+                export_data = [dg for dg in datagroups if dg['name'] in selected_datagroup]
+                if export_data:
+                    jsonfile = BytesIO()
+                    jsonfile.write(json.dumps(export_data).encode('utf-8'))
+                    jsonfile.seek(0)
+                    return send_file(
+                        jsonfile,
+                        mimetype='application/json',
+                        as_attachment=True,
+                        download_name=f'datagroup-{current_datagroup}-export-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.json'
+                    )
     return render_template('export_datagroup.html', datagroups=datagroups, export_type='JSON')
 
 @app.route('/big_ips')
