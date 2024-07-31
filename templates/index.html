@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-
 <h2>Data Groups</h2>
 
 <a href="{{ url_for('add_datagroup') }}" class="button" id="create-new-datagroup-button">Create New Data Group</a>
@@ -29,6 +28,14 @@
                         <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
                         <button type="submit">Delete</button>
                     </form>
+                    <form action="{{ url_for('export_datagroup_csv') }}" method="post" style="display:inline;">
+                        <input type="hidden" name="datagroup" value="{{ datagroup.name }}">
+                        <button type="submit">Export CSV</button>
+                    </form>
+                    <form action="{{ url_for('export_datagroup_json') }}" method="post" style="display:inline;">
+                        <input type="hidden" name="datagroup" value="{{ datagroup.name }}">
+                        <button type="submit">Export JSON</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}
@@ -36,10 +43,28 @@
     </table>
 </div>
 
+<div class="flush-button-container">
+    <form action="{{ url_for('flush_datagroups') }}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete all data groups from the local cache?');">
+        <button type="submit" class="red-button">Flush Local Cache of Data Groups</button>
+    </form>
+</div>
+
 <style>
     #create-new-datagroup-button {
         margin-bottom: 10px; /* Add 10 pixels of padding below the button */
     }
+    .red-button {
+        background-color: red;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        cursor: pointer;
+    }
+    .flush-button-container {
+        text-align: right;
+        margin-top: 20px; /* Add some space above the button */
+    }
 </style>
 
 {% endblock %}
+

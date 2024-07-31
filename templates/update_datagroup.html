@@ -2,30 +2,37 @@
 
 {% block content %}
 {% if selected_datagroup %}
-<h2>Update Data Group: {{ selected_datagroup.name }}</h2>
-<form method="post" action="{{ url_for('update_datagroup') }}">
+<h2>Update Data Group: {{ selected_datagroup.name }} ({{ selected_datagroup.type }})</h2>
+<form method="post" action="{{ url_for('update_datagroup') }}" onsubmit="return validateForm()">
+    <div style="text-align: right;">
+        <button type="submit">Apply Changes</button>
+    </div>
     <input type="hidden" name="name" value="{{ selected_datagroup.name }}">
-    <label for="type">Data Group Type:</label>
-    <select id="type" name="type" required>
-        <option value="string" {% if selected_datagroup.type == 'string' %}selected{% endif %}>String</option>
-        <option value="integer" {% if selected_datagroup.type == 'integer' %}selected{% endif %}>Integer</option>
-        <option value="address" {% if selected_datagroup.type == 'address' %}selected{% endif %}>Address</option>
-    </select>
-    <br><br>
+    <input type="hidden" id="datagroup_type" value="{{ selected_datagroup.type }}">
     <label for="records">Records:</label>
     <div id="records">
         {% for record in selected_datagroup.records %}
         <div class="record">
-            <input type="text" name="records_name" placeholder="Name" value="{{ record.name }}" required>
-            <input type="text" name="records_data" placeholder="Data" value="{{ record.data }}" required>
+            <input type="text" name="records_name" placeholder="Name" value="{{ record.name }}" required oninput="highlightChanged(this)">
+            <input type="text" name="records_data" placeholder="Data" value="{{ record.data }}" oninput="highlightChanged(this)">
             <button type="button" onclick="removeRecord(this)">Delete</button>
         </div>
         {% endfor %}
     </div>
     <button type="button" onclick="addRecord()">Add Record</button>
-    <br><br>
-    <button type="submit">Update Data Group</button>
 </form>
+
+<h3>Entries to be Removed:</h3>
+<div id="removedEntries" style="display: none;">
+</div>
+
+<h3>Import Values from File</h3>
+<form method="post" enctype="multipart/form-data" action="{{ url_for('import_values', name=selected_datagroup.name) }}" id="importForm">
+    <input type="file" name="file" id="fileInput" accept=".csv, .json" style="display: none;" onchange="handleFileChange(event)">
+    <label for="fileInput" class="button">Choose File</label>
+    <span id="fileName">No file chosen</span>
+</form>
+
 {% else %}
 <p>Data group not found.</p>
 {% endif %}
@@ -35,15 +42,134 @@ function addRecord() {
     const recordDiv = document.createElement('div');
     recordDiv.className = 'record';
     recordDiv.innerHTML = `
-        <input type="text" name="records_name" placeholder="Name" required>
-        <input type="text" name="records_data" placeholder="Data" required>
+        <input type="text" name="records_name" placeholder="Name" required oninput="highlightChanged(this)">
+        <input type="text" name="records_data" placeholder="Data"  oninput="highlightChanged(this)">
         <button type="button" onclick="removeRecord(this)">Delete</button>
     `;
+    highlightChanged(recordDiv.querySelectorAll('input'));
     document.getElementById('records').appendChild(recordDiv);
 }
 
 function removeRecord(button) {
-    button.parentElement.remove();
+    const recordDiv = button.parentElement;
+    const name = recordDiv.querySelector('input[name="records_name"]').value;
+    const data = recordDiv.querySelector('input[name="records_data"]').value;
+    addRemovedEntry(name, data);
+    recordDiv.remove();
 }
+
+function highlightChanged(inputs) {
+    if (inputs.length) {
+        inputs.forEach(input => input.style.backgroundColor = 'yellow');
+    } else {
+        inputs.style.backgroundColor = 'yellow';
+    }
+}
+
+function addRemovedEntry(name, data) {
+    const removedEntriesDiv = document.getElementById('removedEntries');
+    
+    const recordDiv = document.createElement('div');
+    recordDiv.className = 'record';
+    recordDiv.innerHTML = `
+        <input type="text" name="removed_records_name" placeholder="Name" value="${name}" required readonly>
+        <input type="text" name="removed_records_data" placeholder="Data" value="${data}" required readonly>
+        <button type="button" onclick="undoRemove(this)">Undo</button>
+    `;
+    highlightRemoved(recordDiv.querySelectorAll('input'));
+    removedEntriesDiv.appendChild(recordDiv);
+    
+    removedEntriesDiv.style.display = 'block';
+}
+
+function highlightRemoved(inputs) {
+    inputs.forEach(input => input.style.backgroundColor = 'lightpink');
+}
+
+function undoRemove(button) {
+    const recordDiv = button.parentElement;
+    const name = recordDiv.querySelector('input[name="removed_records_name"]').value;
+    const data = recordDiv.querySelector('input[name="removed_records_data"]').value;
+    
+    addRecordToRecords(name, data);
+    recordDiv.remove();
+    
+    const removedEntriesDiv = document.getElementById('removedEntries');
+    if (!removedEntriesDiv.hasChildNodes()) {
+        removedEntriesDiv.style.display = 'none';
+    }
+}
+
+function addRecordToRecords(name, data) {
+    const recordDiv = document.createElement('div');
+    recordDiv.className = 'record';
+    recordDiv.innerHTML = `
+        <input type="text" name="records_name" placeholder="Name" value="${name}" required oninput="highlightChanged(this)">
+        <input type="text" name="records_data" placeholder="Data" value="${data}" required oninput="highlightChanged(this)">
+        <button type="button" onclick="removeRecord(this)">Delete</button>
+    `;
+    highlightChanged(recordDiv.querySelectorAll('input'));
+    document.getElementById('records').appendChild(recordDiv);
+}
+
+function handleFileChange(event) {
+    const fileInput = event.target;
+    const fileNameSpan = document.getElementById('fileName');
+    
+    if (fileInput.files.length > 0) {
+        fileNameSpan.innerText = fileInput.files[0].name;
+        document.getElementById('importForm').submit();
+    } else {
+        fileNameSpan.innerText = 'No file chosen';
+    }
+}
+
+function validateForm() {
+    const datagroupType = document.getElementById('datagroup_type').value;
+    const names = document.querySelectorAll('input[name="records_name"]');
+    const nameSet = new Set();
+    
+    for (let name of names) {
+        if (nameSet.has(name.value)) {
+            alert('Duplicate keys are not allowed.');
+            name.style.backgroundColor = 'red';
+            return false;
+        }
+        
+        if (datagroupType === 'integer' && !Number.isInteger(Number(name.value))) {
+            alert('Name must be an integer for integer type data groups.');
+            name.style.backgroundColor = 'red';
+            return false;
+        }
+        
+        if (datagroupType === 'address' && !isValidIPAddress(name.value) && !isValidCIDR(name.value)) {
+            alert('Name must be a valid IP address or CIDR notation for address type data groups.');
+            name.style.backgroundColor = 'red';
+            return false;
+        }
+        
+        nameSet.add(name.value);
+    }
+    
+    return true;
+}
+
+function isValidIPAddress(ip) {
+    const ipv4Pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    const ipv6Pattern = /^(([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:))|(([0-9a-fA-F]{1,4}:){1,7}:)|(([0-9a-fA-F]{1,4}:){1,6}(:[0-9a-fA-F]{1,4}){1,1})|(([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2})|(([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3})|(([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4})|(([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5})|(([0-9a-fA-F]{1,4}:){1,1}(:[0-9a-fA-F]{1,4}){1,6})|(::([0-9a-fA-F]{1,4}:){1,7}|:)|(([0-9a-fA-F]{1,4}:){1,7}:)$/
+    return ipv4Pattern.test(ip) || ipv6Pattern.test(ip);
+}
+
+function isValidCIDR(cidr) {
+    const cidrPattern = /^([0-9]{1,3}\.){3}[0-9]{1,3}\/([0-9]|[1-2][0-9]|3[0-2])$/;
+    const ipv6CIDRPattern = /^([0-9a-fA-F]{1,4}:){1,7}([0-9a-fA-F]{1,4}|:)\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8])$/
+    return cidrPattern.test(cidr) || ipv6CIDRPattern.test(cidr);
+}
+
+document.querySelectorAll('input[name="records_name"], input[name="records_data"]').forEach(input => {
+    input.addEventListener('input', function() {
+        highlightChanged(this);
+    });
+});
 </script>
 {% endblock %}
