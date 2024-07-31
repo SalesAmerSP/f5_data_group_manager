@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Update Data Group</h2>
+{% if selected_datagroup %}
+<h2>Update Data Group: {{ selected_datagroup.name }}</h2>
 <form method="post" action="{{ url_for('update_datagroup') }}">
-    <label for="name">Data Group Name:</label>
-    <select id="name" name="name" required onchange="this.form.submit()">
-        <option value="" disabled selected>Select a Data Group</option>
-        {% for datagroup in datagroups %}
-        <option value="{{ datagroup.name }}" {% if selected_datagroup and datagroup.name == selected_datagroup.name %}selected{% endif %}>{{ datagroup.name }}</option>
-        {% endfor %}
+    <input type="hidden" name="name" value="{{ selected_datagroup.name }}">
+    <label for="type">Data Group Type:</label>
+    <select id="type" name="type" required>
+        <option value="string" {% if selected_datagroup.type == 'string' %}selected{% endif %}>String</option>
+        <option value="integer" {% if selected_datagroup.type == 'integer' %}selected{% endif %}>Integer</option>
+        <option value="address" {% if selected_datagroup.type == 'address' %}selected{% endif %}>Address</option>
     </select>
     <br><br>
-    {% if selected_datagroup %}
     <label for="records">Records:</label>
     <div id="records">
         {% for record in selected_datagroup.records %}
         <div class="record">
-            <input type="text" name="records_name" value="{{ record.name }}" required>
-            <input type="text" name="records_data" value="{{ record.data }}" required>
+            <input type="text" name="records_name" placeholder="Name" value="{{ record.name }}" required>
+            <input type="text" name="records_data" placeholder="Data" value="{{ record.data }}" required>
             <button type="button" onclick="removeRecord(this)">Delete</button>
         </div>
         {% endfor %}
@@ -25,8 +25,10 @@
     <button type="button" onclick="addRecord()">Add Record</button>
     <br><br>
     <button type="submit">Update Data Group</button>
-    {% endif %}
 </form>
+{% else %}
+<p>Data group not found.</p>
+{% endif %}
 
 <script>
 function addRecord() {

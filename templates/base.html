@@ -34,13 +34,7 @@
                     </div>
                 </li>
                 <li><a href="{{ url_for('remove_datagroup') }}">Remove Data Group from BIG-IPs</a></li>
-                <li><a href="{{ url_for('update_datagroup') }}">Update Data Group</a></li>
                 <li><a href="{{ url_for('deploy_datagroups') }}">Deploy Data Groups to BIG-IPs</a></li>
-                <li>
-                    <form action="{{ url_for('flush_datagroups') }}" method="post" style="display:inline;">
-                        <button type="submit" style="background:none;border:none;color:#007BFF;text-decoration:underline;cursor:pointer;">Flush Data Groups</button>
-                    </form>
-                </li>
             </ul>
         </nav>
         <div class="content">

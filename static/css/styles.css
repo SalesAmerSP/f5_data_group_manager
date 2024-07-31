@@ -173,3 +173,25 @@ nav ul li a:hover {
 table, th, td {
   border: 1px solid black;
 }
+
+.table-container {
+  width: 100%;
+  height: 100%;
+  display: flex; /* Optional: For modern layouts */
+  justify-content: center; /* Optional: For centering content */
+  align-items: center; /* Optional: For centering content */
+}
+
+.table-container table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse; /* Optional: For cleaner borders */
+}
+
+.table-container table th,
+.table-container table td {
+    text-align: center; /* Horizontal centering */
+    vertical-align: middle; /* Vertical centering */
+    border: 1px solid #000; /* Optional: For visual clarity */
+    padding: 10px; /* Optional: Add padding for better spacing */
+}

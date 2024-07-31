@@ -46,8 +46,12 @@ def read_json(file):
         return []
 
 def write_json(file, data):
-    with open(file, 'w') as f:
-        json.dump(data, f, indent=4)
+    try:
+        with open(file, 'w') as f:
+            json.dump(data, f, indent=4)
+        print(f"Successfully wrote to {file}")
+    except Exception as e:
+        print(f"Error writing to {file}: {e}")
 
 def lint_csv(file_path):
     # Basic linting for CSV format
@@ -71,12 +75,10 @@ def lint_json(file_path):
         return False, str(e)
 
 @app.route('/import_datagroups_from_bigip', methods=['GET', 'POST'])
-def import_datagroups_from_bigip():
-    devices = read_json(DEVICES_FILE)
+def import_datagroups_from_bigip(devices):
     if request.method == 'POST':
-        selected_devices = request.form.getlist('devices')
         imported_datagroups = []
-        for device_name in selected_devices:
+        for device_name in devices:
             device = next((d for d in devices if d['name'] == device_name), None)
             if device:
                 datagroups = import_datagroups_from_bigip(device)
@@ -108,22 +110,23 @@ def index():
 @app.route('/add_datagroup', methods=['GET', 'POST'])
 def add_datagroup():
     if request.method == 'POST':
-        name = request.form['name']
+        dg_name = request.form['name']
         type_ = request.form['type']
         records = []
         names = request.form.getlist('records_name')
         datas = request.form.getlist('records_data')
-        for name, data in zip(names, datas):
-            records.append({'name': name, 'data': data})
+        for record_name, record_data in zip(names, datas):
+            records.append({'name': record_name, 'data': record_data})
         
         datagroups = read_json(DATAGROUPS_FILE)
         description = f"Last modified by F5 DGM on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC"
-        datagroups.append({'name': name, 'type': type_, 'description': description, 'records': records})
+        datagroups.append({'name': dg_name, 'type': type_, 'description': description, 'records': records})
         write_json(DATAGROUPS_FILE, datagroups)
         flash('Data group added successfully!')
         return redirect(url_for('index'))
     
     return render_template('add_datagroup.html')
+
 
 
 @app.route('/remove_datagroup', methods=['GET', 'POST'])
@@ -205,17 +208,31 @@ def update_datagroup():
     datagroups = read_json(DATAGROUPS_FILE)
     if request.method == 'POST':
         name = request.form['name']
+        type_ = request.form['type']
         new_records = []
         names = request.form.getlist('records_name')
         datas = request.form.getlist('records_data')
-        for name, data in zip(names, datas):
-            new_records.append({'name': name, 'data': data})
+        
+        # Debugging prints to check form data
+        print(f"Received names: {names}")
+        print(f"Received datas: {datas}")
+        
+        for record_name, record_data in zip(names, datas):
+            new_records.append({'name': record_name, 'data': record_data})
+        
         description = f"Last modified by F5 DGM on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC"
+        
+        # Update the datagroup
         for dg in datagroups:
             if dg['name'] == name:
+                dg['type'] = type_
                 dg['records'] = new_records
                 dg['description'] = description
                 break
+        
+        # Debugging print to check updated datagroups
+        print(f"Updated datagroups: {datagroups}")
+        
         write_json(DATAGROUPS_FILE, datagroups)
         flash('Data group updated successfully!')
         return redirect(url_for('index'))
