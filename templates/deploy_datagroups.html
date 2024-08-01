@@ -4,22 +4,52 @@
 <h2>Deploy Data Groups</h2>
 <form method="post" action="{{ url_for('deploy_datagroups') }}">
     <label>Select Devices:</label>
-    <br>
-    {% for device in devices %}
-    <div class="device-checkbox">
-        <input type="checkbox" id="device_{{ device.name }}" name="devices" value="{{ device.name }}">
-        <label for="device_{{ device.name }}">{{ device.name }} ({{ device.address }})</label>
-    </div>
-    {% endfor %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="border: 1px solid #dddddd; text-align: center;">Select</th>
+                <th style="border: 1px solid #dddddd; text-align: left;">Device Name</th>
+                <th style="border: 1px solid #dddddd; text-align: left;">Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for device in devices %}
+            <tr>
+                <td style="border: 1px solid #dddddd; text-align: center;">
+                    <input type="checkbox" id="device_{{ device.name }}" name="devices" value="{{ device.name }}">
+                </td>
+                <td style="border: 1px solid #dddddd; text-align: left;">
+                    <label for="device_{{ device.name }}">{{ device.name }}</label>
+                </td>
+                <td style="border: 1px solid #dddddd; text-align: left;">
+                    {{ device.address }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     <br>
     <label>Select Data Groups:</label>
-    <br>
-    {% for datagroup in datagroups %}
-    <div class="datagroup-checkbox">
-        <input type="checkbox" id="datagroup_{{ datagroup.name }}" name="datagroups" value="{{ datagroup.name }}">
-        <label for="datagroup_{{ datagroup.name }}">{{ datagroup.name }}</label>
-    </div>
-    {% endfor %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="border: 1px solid #dddddd; text-align: center;">Select</th>
+                <th style="border: 1px solid #dddddd; text-align: left;">Data Group Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for datagroup in datagroups %}
+            <tr>
+                <td style="border: 1px solid #dddddd; text-align: center;">
+                    <input type="checkbox" id="datagroup_{{ datagroup.name }}" name="datagroups" value="{{ datagroup.name }}">
+                </td>
+                <td style="border: 1px solid #dddddd; text-align: left;">
+                    <label for="datagroup_{{ datagroup.name }}">{{ datagroup.name }}</label>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     <br>
     <button type="submit">Deploy Selected Data Groups</button>
 </form>

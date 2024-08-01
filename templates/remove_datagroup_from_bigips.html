@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remove Data Groups from BIG-IPs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Remove Data Groups from BIG-IPs</h2>
+        <form method="post" action="{{ url_for('remove_datagroup_from_bigips') }}">
+            {% for device in devices %}
+            <h3>{{ device.name }} ({{ device.address }})</h3>
+            <table class="datagroups-table">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Name</th>
+                        <th>Partition</th>
+                        <th>Record Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for datagroup in device.datagroups %}
+                    <tr>
+                        <td><input type="checkbox" name="selected_datagroups" value="{{ device.name }}|{{ datagroup.name }}"></td>
+                        <td>{{ datagroup.name }}</td>
+                        <td>{{ datagroup.partition }}</td>
+                        <td>{{ datagroup.records_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endfor %}
+            <br>
+            <button type="submit">Delete Selected Data Groups</button>
+        </form>
+    </div>
+    <style>
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .datagroups-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .datagroups-table th, .datagroups-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .datagroups-table th {
+            background-color: #f2f2f2;
+        }
+        .datagroups-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .datagroups-table tr:hover {
+            background-color: #ddd;
+        }
+        button {
+            background-color: red;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: darkred;
+        }
+    </style>
+</body>
+</html>

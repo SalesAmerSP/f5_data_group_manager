@@ -8,20 +8,28 @@ import csv
 import ipaddress
 import socket
 import base64
+import logging
 from flask_talisman import Talisman
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from requests.auth import HTTPBasicAuth
-from encryption import encrypt_password, decrypt_password  # Correctly import encryption functions
-from datetime import datetime  # Import datetime module
+from encryption import encrypt_password, decrypt_password
+from datetime import datetime
 from werkzeug.utils import secure_filename
 from datetime import datetime, timezone
 from io import StringIO, BytesIO, TextIOWrapper
 from urllib.parse import unquote
 from ipaddress import ip_address, ip_network
 from helper_functions import (
-    test_dns_resolution, encode_base64, decode_base64, allowed_file, read_json, write_json,
-    lint_csv, lint_json, is_device_reachable, verify_device_credentials
+    test_dns_resolution, 
+    allowed_file, 
+    read_json, 
+    write_json, 
+    lint_csv, 
+    lint_json, 
+    is_device_reachable, 
+    verify_device_credentials
 )
+
 # Disable SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -32,19 +40,8 @@ app = Flask(__name__)
 talisman = Talisman(app)
 
 csp = {
-    'default-src': [
-        '\'self\'', 
-        'https://*',
-        '\'unsafe-inline\'', 
-        '\'unsafe-eval\''
-    ],
-    'script-src': [
-        '\'self\'',
-        'https://*',
-        '\'unsafe-inline\'',  # Allow inline scripts
-        '\'unsafe-eval\''
-        '*'
-    ],
+    'default-src': ['\'self\'', 'https://*', '\'unsafe-inline\'',  '\'unsafe-eval\''],
+    'script-src': ['\'self\'', 'https://*', '\'unsafe-inline\'',  '\'unsafe-eval\'', '*']
 }
 # HTTP Strict Transport Security (HSTS) Header
 hsts = {
@@ -407,54 +404,52 @@ def import_from_url():
 
     return render_template('import_from_url.html')
 
-# App route for importing datagroups from BIG-IP(s) (1 of 3)
+# App route for importing datagroups from BIG-IP(s)
 @app.route('/import_from_bigips', methods=['GET', 'POST'])
 def import_from_bigips():
+    devices = read_json(DEVICES_FILE)
+    device_datagroups = []
+
+    for device in devices:
+        datagroups = fetch_datagroups_from_bigip(device)
+        if datagroups:
+            device['datagroups'] = datagroups
+            device_datagroups.append(device)
+
     if request.method == 'POST':
-        selected_devices = request.form.getlist('devices')
-        devices = read_json(DEVICES_FILE)
+        selected_datagroups = {}
+        for device in device_datagroups:
+            datagroups = request.form.getlist(f'datagroups_{device["name"]}')
+            for datagroup in datagroups:
+                if datagroup not in selected_datagroups:
+                    selected_datagroups[datagroup] = device
+                else:
+                    flash(f'Duplicate data group name "{datagroup}" found across devices. Please ensure unique data group names.')
+                    return render_template('import_from_bigips.html', devices=device_datagroups)
 
-        selected_devices_info = []
-        for device_name in selected_devices:
-            device = next((d for d in devices if d['name'] == device_name), None)
-            if device:
-                # Fetch data groups from the BIG-IP device
-                datagroups = fetch_datagroups_from_bigip(device)
-                if datagroups:
-                    device['datagroups'] = datagroups
-                    selected_devices_info.append(device)
-        selected_devices_string = json.dumps(selected_devices_info)
+        success_count = 0
+        failure_count = 0
 
-        return render_template('select_datagroups.html', selected_devices=selected_devices_string)
+        for datagroup, device in selected_datagroups.items():
+            if import_datagroup_from_device(device, datagroup):
+                success_count += 1
+            else:
+                failure_count += 1
 
-    devices = read_json(DEVICES_FILE)
-    return render_template('import_from_bigips.html', devices=devices)
+        flash(f'Successfully imported {success_count} data groups. Failed to import {failure_count} data groups.')
+        return redirect(url_for('index'))
 
-# App route for importing datagroups from BIG-IP(s) (2 of 3)
-@app.route('/select_datagroups_from_bigips', methods=['POST'])
-def select_datagroups_from_bigips():
-    selected_devices = request.form.getlist('devices')
-    devices = read_json(DEVICES_FILE)
-
-    selected_devices_info = []
-    for device_name in selected_devices:
-        device = next((d for d in devices if d['name'] == device_name), None)
-        if device:
-            # Fetch data groups from the BIG-IP device
-            datagroups = fetch_datagroups_from_bigip(device)
-            if datagroups:
-                device['datagroups'] = datagroups
-                selected_devices_info.append(device)
-
-    # Encode the selected devices information in base64
-    selected_devices_string = json.dumps(selected_devices_info)
-
-    return render_template('select_datagroups.html', selected_devices=selected_devices_string)
+    return render_template('import_from_bigips.html', devices=device_datagroups)
 
 def fetch_datagroups_from_bigip(device):
-    if not test_dns_resolution(device['address']):
-        flash(f'DNS resolution failed for device: {device["name"]}')
+    try:
+        if not test_dns_resolution(device['address']):
+            flash(f'DNS resolution failed for device: {device["name"]}')
+            return []
+    except Exception as e:
+        flash(f'DNS resolution error for device: {device["name"]}, error: {str(e)}')
         return []
+
     url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal"
     decrypted_password = decrypt_password(device['password'])
     if not decrypted_password:
@@ -468,33 +463,40 @@ def fetch_datagroups_from_bigip(device):
         datagroups = [dg['name'] for dg in response.json().get('items', [])]
         return datagroups
     except requests.exceptions.RequestException as e:
-        flash(f'Failed to fetch data groups from device: {device["name"]}')
+        flash(f'Failed to fetch data groups from device: {device["name"]}, error: {str(e)}')
         return []
 
-# App route for importing datagroups from BIG-IP(s) (3 of 3)
-@app.route('/import_selected_datagroups', methods=['POST'])
-def import_selected_datagroups():
+def import_datagroup_from_device(device, datagroup_name):
     try:
-        selected_devices = json.loads(request.form['selected_devices'])
-    except (json.JSONDecodeError, KeyError) as e:
-        flash('Error parsing selected devices.')
-        return redirect(url_for('index'))
+        if not test_dns_resolution(device['address']):
+            flash(f'DNS resolution failed for device: {device["name"]}')
+            return False
+    except Exception as e:
+        flash(f'DNS resolution error for device: {device["name"]}, error: {str(e)}')
+        return False
 
-    datagroups_to_import = []
+    url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal/{datagroup_name}"
+    decrypted_password = decrypt_password(device['password'])
+    if not decrypted_password:
+        flash(f'Failed to decrypt the password for device: {device["name"]}')
+        return False
 
-    for device in selected_devices:
-        datagroups = request.form.getlist(f'datagroups_{device["name"]}')
-        for datagroup in datagroups:
-            datagroups_to_import.append({'device': device, 'datagroup': datagroup})
-
-    # Perform the actual import from the selected data groups
-    for item in datagroups_to_import:
-        device = item['device']
-        datagroup_name = item['datagroup']
-        import_datagroup_from_device(device, datagroup_name)
-
-    flash('Selected data groups imported successfully!')
-    return redirect(url_for('index'))
+    auth = HTTPBasicAuth(device['username'], decrypted_password)
+    try:
+        response = requests.get(url, auth=auth, verify=False)
+        response.raise_for_status()
+        datagroup = response.json()
+        datagroups = read_json(DATAGROUPS_FILE)
+        existing_dg = next((dg for dg in datagroups if dg['name'] == datagroup['name']), None)
+        if existing_dg:
+            existing_dg.update(datagroup)
+        else:
+            datagroups.append(datagroup)
+        write_json(DATAGROUPS_FILE, datagroups)
+        return True
+    except requests.exceptions.RequestException as e:
+        flash(f'Failed to import data group {datagroup_name} from device: {device["name"]}, error: {str(e)}')
+        return False
 
 # App route for updating an existing datagroup
 @app.route('/update_datagroup', methods=['GET', 'POST'])
@@ -529,6 +531,7 @@ def update_datagroup():
     return render_template('update_datagroup.html', datagroups=datagroups, selected_datagroup=selected_datagroup)
 
 # App route for importing values into an existing datagroup
+# App route for importing values into an existing datagroup
 @app.route('/import_values/<name>', methods=['POST'])
 def import_values(name):
     if 'file' not in request.files:
@@ -544,9 +547,9 @@ def import_values(name):
         file.save(file_path)
         
         if filename.endswith('.csv'):
-            valid, message = lint_csv(file_path)
+            valid, message = lint_values_csv(file_path)
         elif filename.endswith('.json'):
-            valid, message = lint_json(file_path)
+            valid, message = lint_values_json(file_path)
         else:
             flash('Unsupported file type.')
 
@@ -576,12 +579,19 @@ def import_values(name):
                     try:
                         new_records = [{'name': int(record['name']), 'data': record['data']} for record in new_records]
                     except ValueError:
-                        flash('Name must be an integer for integer type data groups')
-                        return redirect(request.url)
+                        flash('Import failed: All name values must be an integer for integer type data groups')
+                        return redirect(url_for('update_datagroup', name=name))
                 elif datagroup['type'] == 'address':
-                    # Add validation for address type
-                    pass
-                
+                    for record in new_records:
+                        try:
+                            if '/' in record['name']:
+                                ip_network(record['name'], strict=True)
+                            else:
+                                ip_address(record['name'])
+                        except ValueError:
+                            flash('Import failed: All name values must be valid IPv4 or IPv6 addresses or subnets in CIDR notation with address type data groups')
+                            return redirect(url_for('update_datagroup', name=name))
+                            
                 datagroup['records'].extend(new_records)
                 write_json(DATAGROUPS_FILE, datagroups)
                 flash('Values imported successfully!')
@@ -591,6 +601,25 @@ def import_values(name):
             flash(f'Import Error: {message}')
         
     return redirect(url_for('update_datagroup', name=name))
+
+def lint_values_csv(file_path):
+    try:
+        with open(file_path, newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if len(row) != 2:
+                    return False, 'Each row must have exactly two values'
+            return True, "CSV format is correct"
+    except Exception as e:
+        return False, str(e)
+
+def lint_values_json(file_path):
+    try:
+        with open(file_path) as jsonfile:
+            json.load(jsonfile)
+        return True, "JSON format is correct"
+    except json.JSONDecodeError as e:
+        return False, str(e)
 
 # App route for the BIG-IP devices page
 @app.route('/big_ips')
@@ -661,39 +690,98 @@ def update_device_credentials():
             return redirect(url_for('big_ips'))
 
 
+def export_datagroup__from_bigip_csv(datagroup):
+    csv_string = StringIO()
+    writer = csv.writer(csv_string)
+    writer.writerow(['Data Group', 'Type', 'Name', 'Data'])
 
+    for record in datagroup['records']:
+        writer.writerow([datagroup['name'], datagroup['type'], record['name'], record.get('data', '')])
 
+    csv_bytes = BytesIO(csv_string.getvalue().encode('utf-8'))
+    csv_bytes.seek(0)
 
+    return send_file(
+        csv_bytes,
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'datagroup-{datagroup["name"]}-export.csv'
+    )
 
+def export_datagroup_from_bigip_json(datagroup):
+    json_bytes = BytesIO(json.dumps(datagroup).encode('utf-8'))
+    json_bytes.seek(0)
 
+    return send_file(
+        json_bytes,
+        mimetype='application/json',
+        as_attachment=True,
+        download_name=f'datagroup-{datagroup["name"]}-export.json'
+    )
 
-
-
-
-def get_datagroups_from_devices(device_names):
+# App route to remove datagroups from BIG-IPs
+@app.route('/remove_datagroup_from_bigips', methods=['GET', 'POST'])
+def remove_datagroup_from_bigips():
     devices = read_json(DEVICES_FILE)
-    all_datagroups = {}
-    
-    for device_name in device_names:
-        device = next((d for d in devices if d['name'] == device_name), None)
-        if device:
-            datagroups = import_from_bigips(device)
-            if datagroups:
-                for dg in datagroups:
-                    if dg['name'] in all_datagroups:
-                        all_datagroups[dg['name']].add(device_name)
-                    else:
-                        all_datagroups[dg['name']] = {device_name}
-    
-    # Filter to keep only the data groups that are present on all selected devices
-    common_datagroups = {name: devices for name, devices in all_datagroups.items() if len(devices) == len(device_names)}
-    
-    return list(common_datagroups.keys())
+    device_datagroups = []
+
+    # Fetch datagroups from each device
+    for device in devices:
+        datagroups = fetch_datagroups_from_bigip(device)
+        if datagroups:
+            device['datagroups'] = datagroups
+            device_datagroups.append(device)
+
+    if request.method == 'POST':
+        selected_datagroups = request.form.getlist('selected_datagroups')
+        failed_removals = []
+
+        for item in selected_datagroups:
+            device_name, datagroup_name = item.split('|')
+            device = next((d for d in devices if d['name'] == device_name), None)
+            if device:
+                success = delete_datagroup_from_device(device, datagroup_name)
+                if not success:
+                    failed_removals.append((device_name, datagroup_name))
+
+        if failed_removals:
+            flash(f'Failed to delete data groups from devices: {failed_removals}')
+        else:
+            flash('Data groups deleted successfully from all selected devices!')
+
+        return redirect(url_for('index'))
+
+    return render_template('remove_datagroup_from_bigips.html', devices=device_datagroups)
+
+def fetch_datagroups_from_bigip(device):
+    try:
+        if not test_dns_resolution(device['address']):
+            flash(f'DNS resolution failed for device: {device["name"]}')
+            return []
+    except Exception as e:
+        flash(f'DNS resolution error for device: {device["name"]}, error: {str(e)}')
+        return []
+
+    url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal"
+    decrypted_password = decrypt_password(device['password'])
+    if not decrypted_password:
+        flash(f'Failed to decrypt the password for device: {device["name"]}')
+        return []
+
+    auth = HTTPBasicAuth(device['username'], decrypted_password)
+    try:
+        response = requests.get(url, auth=auth, verify=False)
+        response.raise_for_status()
+        datagroups = response.json().get('items', [])
+        for dg in datagroups:
+            dg['records_count'] = len(dg.get('records', []))
+            dg['partition'] = dg.get('partition', 'Common')
+        return datagroups
+    except requests.exceptions.RequestException as e:
+        flash(f'Failed to fetch data groups from device: {device["name"]}, error: {str(e)}')
+        return []
 
 def delete_datagroup_from_device(device, datagroup_name):
-    if not test_dns_resolution(device['address']):
-        flash(f'DNS resolution failed for device: {device["name"]}')
-        return []
     url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal/{datagroup_name}"
     decrypted_password = decrypt_password(device['password'])
     if not decrypted_password:
@@ -701,66 +789,95 @@ def delete_datagroup_from_device(device, datagroup_name):
         return False
     
     auth = HTTPBasicAuth(device['username'], decrypted_password)
-    response = requests.delete(url, auth=auth, verify=False)
-    
-    return response.status_code == 200
-
-
+    try:
+        response = requests.delete(url, auth=auth, verify=False)
+        response.raise_for_status()
+        return True
+    except requests.exceptions.RequestException as e:
+        flash(f'Failed to delete data group {datagroup_name} from device {device["name"]}: {str(e)}')
+        return False
 
 # App Route for deploying data groups to BIG-IP(s)
 @app.route('/deploy_datagroups', methods=['GET', 'POST'])
 def deploy_datagroups():
     devices = read_json(DEVICES_FILE)
     datagroups = read_json(DATAGROUPS_FILE)
+    
     if request.method == 'POST':
         selected_devices = request.form.getlist('devices')
         selected_datagroups = request.form.getlist('datagroups')
+        
+        if not selected_devices or not selected_datagroups:
+            flash('Please select at least one device and one data group to deploy.')
+            return redirect(url_for('deploy_datagroups'))
+
         failed_devices = []
+        
         for device_name in selected_devices:
             device = next((d for d in devices if d['name'] == device_name), None)
             if device:
                 for dg_name in selected_datagroups:
                     datagroup = next((dg for dg in datagroups if dg['name'] == dg_name), None)
                     if datagroup:
-                        success = deploy_datagroup_to_device(device, datagroup)
-                        if not success:
+                        if not deploy_datagroup_to_device(device, datagroup):
                             failed_devices.append(device_name)
+        
         if failed_devices:
             flash(f'Failed to deploy data groups to devices: {", ".join(failed_devices)}')
         else:
             flash('Data groups deployed successfully to all selected devices!')
         return redirect(url_for('index'))
+    
     return render_template('deploy_datagroups.html', devices=devices, datagroups=datagroups)
 
 def deploy_datagroup_to_device(device, datagroup):
+    # test name resolution prior to API call
     if not test_dns_resolution(device['address']):
         flash(f'DNS resolution failed for device: {device["name"]}')
-        return []
-    url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal/{datagroup['name']}"
+        return False
+    # decrypt password from device file
     decrypted_password = decrypt_password(device['password'])
     if not decrypted_password:
         flash(f'Failed to decrypt the password for device: {device["name"]}')
         return False
-
+    # create auth
     auth = HTTPBasicAuth(device['username'], decrypted_password)
+    # create headers
     headers = {'Content-Type': 'application/json'}
-    
+
+    url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal/{datagroup['name']}"
+
     # Check if the data group exists
-    response = requests.get(url, auth=auth, headers=headers, verify=False)
-    
-    if response.status_code == 200:
-        # Data group exists, update it
-        update_url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal/{datagroup['name']}"
-        response = requests.put(update_url, auth=auth, headers=headers, json=datagroup, verify=False)
-    elif response.status_code == 404:
-        # Data group does not exist, create it
-        create_url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal"
-        response = requests.post(create_url, auth=auth, headers=headers, json=datagroup, verify=False)
-    else:
-        # Handle other response codes
+    try:
+        response = requests.get(url, auth=auth, headers=headers, verify=False)
+        response.raise_for_status()
+        exists = True
+    except requests.exceptions.HTTPError as http_err:
+        if response.status_code == 404:
+            exists = False
+        else:
+            flash(f'HTTP error occurred for {device}: {http_err} (Response: {response.text})')
+            return False
+    except Exception as err:
+        flash(f'Error occurred: {err} (Payload: {datagroup}) (Response: {response.text})')
         return False
 
-    return response.status_code in [200, 201]
+    # Create or update the data group
+    try:
+        if exists:
+            response = requests.put(url, auth=auth, headers=headers, json=datagroup, verify=False)
+        else:
+            url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal"
+            response = requests.post(url, auth=auth, headers=headers, json=datagroup, verify=False)
+        response.raise_for_status()
+        return True
+    except requests.exceptions.HTTPError as http_err:
+        flash(f'HTTP error occurred for {device} {exists}: {http_err} (Payload: {datagroup}) (Response: {response.text})')
+        return False
+    except Exception as err:
+        flash(f'Error occurred: {err}')
+        return False
+
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8443, debug=True, ssl_context='adhoc')

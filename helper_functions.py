@@ -1,6 +1,7 @@
 import socket
 import json
 import requests
+import csv
 from requests.auth import HTTPBasicAuth
 
 # Constants
@@ -70,3 +71,4 @@ def verify_device_credentials(address, username, password):
         return response.status_code == 200
     except requests.RequestException:
         return False
+
