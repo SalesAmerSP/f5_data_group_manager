@@ -1,48 +1,59 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <h2>BIG-IP Devices</h2>
 
-<a href="{{ url_for('add_device') }}" class="button" id="add-device-button">Add Device</a>
+<a href="{{ url_for('add_device') }}" class="button" id="add-device-button"
+  >Add Device</a
+>
 
 <div class="table-container">
-<table>
+  <table>
     <tr>
-        <th>Name</th>
-        <th>Address</th>
-        <th>Actions</th>
+      <th>Name</th>
+      <th>Address</th>
+      <th>Actions</th>
     </tr>
     {% for device in devices %}
     <tr>
-        <td>{{ device.name }}</td>
-        <td>{{ device.address }}</td>
-        <td>
-            <form action="{{ url_for('remove_device') }}" method="post" style="display:inline;" onsubmit="return confirmDeletion('{{ device.name }}');">
-                <input type="hidden" name="device_name" value="{{ device.name }}">
-                <button type="submit" class="padded-button">Remove</button>
-            </form>
-            <form action="{{ url_for('update_device_credentials') }}" method="get" style="display:inline;">
-                <input type="hidden" name="device_name" value="{{ device.name }}">
-                <button type="submit">Update Credentials</button>
-            </form>
-        </td>
+      <td>{{ device.name }}</td>
+      <td>{{ device.address }}</td>
+      <td>
+        <form
+          action="{{ url_for('remove_device') }}"
+          method="post"
+          style="display: inline"
+          onsubmit="return confirmDeletion('{{ device.name }}');"
+        >
+          <input type="hidden" name="device_name" value="{{ device.name }}" />
+          <button type="submit" class="padded-button">Remove</button>
+        </form>
+        <form
+          action="{{ url_for('update_device_credentials') }}"
+          method="get"
+          style="display: inline"
+        >
+          <input type="hidden" name="device_name" value="{{ device.name }}" />
+          <button type="submit">Update Credentials</button>
+        </form>
+      </td>
     </tr>
     {% endfor %}
-</table>
+  </table>
 </div>
 
 <script>
-function confirmDeletion(deviceName) {
-    return confirm('Are you sure you want to delete the device: ' + deviceName + '?');
-}
+  function confirmDeletion(deviceName) {
+    return confirm(
+      "Are you sure you want to delete the device: " + deviceName + "?"
+    );
+  }
 </script>
 
 <style>
-    #add-device-button {
-        margin-bottom: 10px; /* Add 10 pixels of padding between the button and the table */
-    }
-    .padded-button {
-        margin-bottom: 10px; /* Add 10 pixels of padding below each action button */
-    }
+  #add-device-button {
+    margin-bottom: 10px; /* Add 10 pixels of padding between the button and the table */
+  }
+  .padded-button {
+    margin-bottom: 10px; /* Add 10 pixels of padding below each action button */
+  }
 </style>
 {% endblock %}

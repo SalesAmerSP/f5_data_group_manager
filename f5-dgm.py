@@ -7,6 +7,7 @@ import urllib3
 import csv
 import ipaddress
 import socket
+import base64
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from requests.auth import HTTPBasicAuth
 from encryption import encrypt_password, decrypt_password  # Correctly import encryption functions
@@ -39,8 +40,6 @@ for filename in [DEVICES_FILE, DATAGROUPS_FILE]:
         with open(filename, 'w') as f:
             json.dump([], f)
 
-import socket
-
 def test_dns_resolution(hostname, timeout=5):
     try:
         socket.setdefaulttimeout(timeout)
@@ -48,6 +47,12 @@ def test_dns_resolution(hostname, timeout=5):
         return True
     except socket.error as e:
         return False
+
+def encode_base64(value):
+    return base64.b64encode(value.encode()).decode()
+
+def decode_base64(value):
+    return base64.b64decode(value.encode()).decode()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -109,17 +114,16 @@ def verify_device_credentials(address, username, password):
         return False
     return True
 
-@app.route('/import_from_bigips', methods=['GET', 'POST'])
-def import_from_bigips():
+@app.route('/big_ips')
+def big_ips():
     devices = read_json(DEVICES_FILE)
-    return render_template('import_from_bigips.html', devices=devices)
+    return render_template('big_ips.html', devices=devices)
 
 @app.route('/')
 def index():
     devices = read_json(DEVICES_FILE)
     datagroups = read_json(DATAGROUPS_FILE)
     return render_template('index.html', devices=devices, datagroups=datagroups)
-
 
 @app.route('/add_datagroup', methods=['GET', 'POST'])
 def add_datagroup():
@@ -683,10 +687,29 @@ def export_datagroup_json():
         download_name=f'datagroup-{datagroup_name}-export-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.json'
     )
 
-@app.route('/big_ips')
-def big_ips():
+@app.route('/import_from_bigips', methods=['GET', 'POST'])
+def import_from_bigips():
+    if request.method == 'POST':
+        selected_devices = request.form.getlist('devices')
+        devices = read_json(DEVICES_FILE)
+
+        selected_devices_info = []
+        for device_name in selected_devices:
+            device = next((d for d in devices if d['name'] == device_name), None)
+            if device:
+                # Fetch data groups from the BIG-IP device
+                datagroups = fetch_datagroups_from_bigip(device)
+                if datagroups:
+                    device['datagroups'] = datagroups
+                    selected_devices_info.append(device)
+
+        # Encode the selected devices information in base64
+        selected_devices_encoded = encode_base64(json.dumps(selected_devices_info))
+
+        return render_template('select_datagroups.html', selected_devices=selected_devices_encoded)
+
     devices = read_json(DEVICES_FILE)
-    return render_template('big_ips.html', devices=devices)
+    return render_template('import_from_bigips.html', devices=devices)
 
 @app.route('/select_datagroups_from_bigips', methods=['POST'])
 def select_datagroups_from_bigips():
@@ -703,7 +726,10 @@ def select_datagroups_from_bigips():
                 device['datagroups'] = datagroups
                 selected_devices_info.append(device)
 
-    return render_template('select_datagroups.html', selected_devices=selected_devices_info)
+    # Encode the selected devices information in base64
+    selected_devices_encoded = encode_base64(json.dumps(selected_devices_info))
+
+    return render_template('select_datagroups.html', selected_devices=selected_devices_encoded)
 
 def fetch_datagroups_from_bigip(device):
     if not test_dns_resolution(device['address']):
@@ -728,7 +754,8 @@ def fetch_datagroups_from_bigip(device):
 @app.route('/import_selected_datagroups', methods=['POST'])
 def import_selected_datagroups():
     try:
-        selected_devices_str = request.form['selected_devices'].replace('+', '').replace("'", '"')
+        selected_devices_encoded = request.form['selected_devices']
+        selected_devices_str = decode_base64(selected_devices_encoded)
         selected_devices = json.loads(selected_devices_str)
     except (json.JSONDecodeError, KeyError) as e:
         flash('Error parsing selected devices.')
@@ -749,6 +776,7 @@ def import_selected_datagroups():
 
     flash('Selected data groups imported successfully!')
     return redirect(url_for('index'))
+
 
 def import_datagroup_from_device(device, datagroup_name):
     if not test_dns_resolution(device['address']):
