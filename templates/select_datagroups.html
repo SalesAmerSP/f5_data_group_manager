@@ -4,76 +4,28 @@
 <h2>Select Data Groups to Import</h2>
 <form method="post" action="{{ url_for('import_selected_datagroups') }}">
     <input type="hidden" name="selected_devices" value="{{ selected_devices }}">
-    {% for device in selected_devices %}
+    {% for device in selected_devices|tojson %}
     <h3>{{ device.name }} ({{ device.address }})</h3>
-        <div class="table-container">
-            <table class="datagroups-table">
-                <thead>
-                    <tr>
-                        <th>Data Group Name</th>
-                        <th>Select</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for datagroup in device.datagroups %}
-                    <tr>
-                        <td style="text-align: left;">{{ datagroup }}</td>
-                        <td style="text-align: center;">
-                            <input type="checkbox" name="datagroups_{{ device.name }}" value="{{ datagroup }}">
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Data Group</th>
+                <th>Select</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for datagroup in device.datagroups %}
+            <tr>
+                <td>{{ datagroup }}</td>
+                <td style="text-align:center;">
+                    <input type="checkbox" name="datagroups_{{ device.name }}" value="{{ datagroup }}">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     {% endfor %}
     <br>
     <button type="submit">Import Selected Data Groups</button>
 </form>
-{% endblock %}
-
-
-    <div class="table-container">
-        <table class="datagroups-table">
-            <thead>
-                <tr>
-                    <th>Data Group Name</th>
-                    <th>Select</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for datagroup in device.datagroups %}
-                <tr>
-                    <td style="text-align: left;">{{ datagroup }}</td>
-                    <td style="text-align: center;">
-                        <input type="checkbox" name="datagroups_{{ device.name }}" value="{{ datagroup }}">
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endfor %}
-    <br>
-    <button type="submit">Import Selected Data Groups</button>
-</form>
-
-<style>
-    .table-container {
-        width: 100%;
-        overflow-x: auto;
-    }
-    .datagroups-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .datagroups-table th, .datagroups-table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-    }
-    .datagroups-table th {
-        text-align: left;
-        background-color: #f2f2f2;
-    }
-</style>
 {% endblock %}
