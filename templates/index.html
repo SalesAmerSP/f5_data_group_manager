@@ -6,6 +6,7 @@
 <a href="{{ url_for('add_datagroup') }}" class="button" id="create-new-datagroup-button">Create New Data Group</a>
 <a href="{{ url_for('import_from_file') }}" class="button" id="import-datagroup-from-file-button">Import Data Group from File</a>
 <a href="{{ url_for('import_from_url') }}" class="button" id="import-datagroup-from-url-button">Import Data Group from URL</a>
+<a href="{{ url_for('import_datagroups_from_bigip') }}" class="button" id="import-datagroups-from-bigip-button">Import Data Groups from BIG-IP</a>
 
 <div class="table-container">
     <table class="datagroups-table">
@@ -26,17 +27,17 @@
                 <td>{{ datagroup.description }}</td>
                 <td>{{ datagroup.records|length }}</td>
                 <td>
-                    <form action="{{ url_for('remove_datagroup') }}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete the data group: {{ datagroup.name }}?');">
-                        <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
-                        <button type="submit">Delete</button>
-                    </form>
                     <form action="{{ url_for('export_datagroup_csv') }}" method="post" style="display:inline;">
-                        <input type="hidden" name="datagroup" value="{{ datagroup.name }}">
+                        <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
                         <button type="submit">Export CSV</button>
                     </form>
                     <form action="{{ url_for('export_datagroup_json') }}" method="post" style="display:inline;">
-                        <input type="hidden" name="datagroup" value="{{ datagroup.name }}">
+                        <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
                         <button type="submit">Export JSON</button>
+                    </form>
+                    <form action="{{ url_for('remove_datagroup') }}" method="post" style="display:inline;">
+                        <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
+                        <button type="submit" style="background-color: red; color: white;" onclick="return confirm('Are you sure you want to delete this data group?')">Delete</button>
                     </form>
                 </td>
             </tr>
@@ -54,17 +55,6 @@
 <style>
     #create-new-datagroup-button {
         margin-bottom: 10px; /* Add 10 pixels of padding below the button */
-    }
-    .red-button {
-        background-color: red;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        cursor: pointer;
-    }
-    .flush-button-container {
-        text-align: right;
-        margin-top: 20px; /* Add some space above the button */
     }
 </style>
 

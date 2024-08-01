@@ -2,6 +2,10 @@
 datagroups.json
 devices.json
 
+# uploads
+uploads/
+uploads/**
+
 # local secret key file
 secret.key
 

@@ -1,0 +1,3 @@
+Data Group,Type,Name,Data
+valid_integer_datagroup,integer,primary,apple
+valid_integer_datagroup,integer,-322,banana

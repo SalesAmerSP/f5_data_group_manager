@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Confirm Import</h2>
+<p>The following data groups already exist and will be overwritten:</p>
+<ul>
+    {% for dg in existing_datagroups %}
+    <li>{{ dg.name }}</li>
+    {% endfor %}
+</ul>
+<form method="post" action="{{ url_for('confirm_import') }}">
+    <input type="hidden" name="file_path" value="{{ file_path }}">
+    <label for="overwrite">Do you want to overwrite these data groups?</label>
+    <input type="checkbox" id="overwrite" name="overwrite" value="yes">
+    <br><br>
+    <button type="submit">Confirm</button>
+</form>
+{% endblock %}

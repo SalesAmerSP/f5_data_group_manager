@@ -1,0 +1,6 @@
+Data Group,Type,Name,Data
+valid_integer_datagroup,integer,1,apple
+valid_integer_datagroup,integer,2,banana
+valid_integer_datagroup,integer,3,chocolate
+valid_integer_datagroup,integer,4,dairy
+valid_integer_datagroup,integer,5,eggs

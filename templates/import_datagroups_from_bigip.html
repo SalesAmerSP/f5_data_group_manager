@@ -2,16 +2,51 @@
 
 {% block content %}
 <h2>Import Data Groups from BIG-IP</h2>
-<form method="post" action="{{ url_for('import_datagroups_from_bigip') }}">
+<form method="post" action="{{ url_for('select_datagroups_from_bigips') }}">
     <label>Select Devices:</label>
     <br>
-    {% for device in devices %}
-    <div class="device-checkbox">
-        <input type="checkbox" id="device_{{ device.name }}" name="devices" value="{{ device.name }}">
-        <label for="device_{{ device.name }}">{{ device.name }} ({{ device.address }})</label>
+    <div class="table-container">
+        <table class="devices-table">
+            <thead>
+                <tr>
+                    <th>Device Name</th>
+                    <th>Address</th>
+                    <th>Select</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr>
+                    <td style="text-align: left;">{{ device.name }}</td>
+                    <td style="text-align: left;">{{ device.address }}</td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" id="device_{{ device.name }}" name="devices" value="{{ device.name }}">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    {% endfor %}
     <br>
-    <button type="submit">Import Data Groups</button>
+    <button type="submit">Next</button>
 </form>
+
+<style>
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .devices-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .devices-table th, .devices-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    .devices-table th {
+        text-align: left;
+        background-color: #f2f2f2;
+    }
+</style>
 {% endblock %}
