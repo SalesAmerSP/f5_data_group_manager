@@ -1,0 +1,4 @@
+Data Group,Type,Name,Data
+valid_string_datagroup,string,alpha,crackers
+valid_string_datagroup,string,beta,chips
+valid_string_datagroup,string,theta,candy
