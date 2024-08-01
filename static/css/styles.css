@@ -195,3 +195,19 @@ table, th, td {
     border: 1px solid #000; /* Optional: For visual clarity */
     padding: 10px; /* Optional: Add padding for better spacing */
 }
+
+.red-button {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.red-button:hover {
+  background-color: darkred;
+}
+
+.datagroups-table {
+  margin-bottom: 10px; /* Add 10 pixels of padding below the table */
+}

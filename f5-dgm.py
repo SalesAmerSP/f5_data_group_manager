@@ -693,25 +693,26 @@ def export_datagroup_csv():
     )
 
 
-@app.route('/export_datagroup_json', methods=['GET', 'POST'])
+@app.route('/export_datagroup_json', methods=['POST'])
 def export_datagroup_json():
     datagroups = read_json(DATAGROUPS_FILE)
-    if request.method == 'POST':
-        selected_datagroup = request.form.getlist('datagroup')
-        if selected_datagroup:
-            for current_datagroup in selected_datagroup:
-                export_data = [dg for dg in datagroups if dg['name'] in selected_datagroup]
-                if export_data:
-                    jsonfile = BytesIO()
-                    jsonfile.write(json.dumps(export_data, indent=4).encode('utf-8'))
-                    jsonfile.seek(0)
-                    return send_file(
-                        jsonfile,
-                        mimetype='application/json',
-                        as_attachment=True,
-                        download_name=f'datagroup-{current_datagroup}-export-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.json'
-                    )
-    return render_template('export_datagroup.html', datagroups=datagroups, export_type='JSON')
+    datagroup_name = request.form['datagroup_name']
+    datagroup = next((dg for dg in datagroups if dg['name'] == datagroup_name), None)
+
+    if not datagroup:
+        flash(f'Data group {datagroup_name} not found')
+        return redirect(url_for('index'))
+
+    # Convert the datagroup to JSON bytes
+    json_bytes = BytesIO(json.dumps(datagroup).encode('utf-8'))
+    json_bytes.seek(0)
+
+    return send_file(
+        json_bytes,
+        mimetype='application/json',
+        as_attachment=True,
+        download_name=f'datagroup-{datagroup_name}-export-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.csv'
+    )
 
 @app.route('/big_ips')
 def big_ips():

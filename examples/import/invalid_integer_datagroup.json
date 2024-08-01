@@ -1,0 +1,27 @@
+{
+  "name": "invalid_integer_datagroup",
+  "type": "integer",
+  "description": "Last modified by F5 DGM on 2024-08-01 09:31:58 UTC",
+  "records": [
+    {
+      "name": "1",
+      "data": "apple"
+    },
+    {
+      "name": "2",
+      "data": "banana"
+    },
+    {
+      "name": "3",
+      "data": "chocolate"
+    },
+    {
+      "name": "4",
+      "data": "dairy"
+    },
+    {
+      "name": "5",
+      "data": "eggs"
+    }
+  ]
+}

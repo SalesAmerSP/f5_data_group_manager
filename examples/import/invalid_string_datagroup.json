@@ -1,0 +1,12 @@
+{
+  "name": "invalid_string_datagroup",
+  "type": "string",
+  "description": "Last modified by F5 DGM on 2024-08-01 09:35:21 UTC",
+  "records": [
+    {
+      "name": "alpha",
+      "data": "crackers",
+      "values": "animal"
+    }
+  ]
+}
