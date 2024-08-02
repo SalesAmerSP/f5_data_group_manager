@@ -13,7 +13,6 @@ from flask_talisman import Talisman
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from requests.auth import HTTPBasicAuth
 from encryption import encrypt_password, decrypt_password
-from datetime import datetime
 from werkzeug.utils import secure_filename
 from datetime import datetime, timezone
 from io import StringIO, BytesIO, TextIOWrapper
@@ -279,6 +278,7 @@ def index():
 def add_datagroup():
     if request.method == 'POST':
         dg_name = request.form['name']
+        description = request.form['description']
         type_ = request.form['type']
         records = []
         names = request.form.getlist('records_name')
@@ -287,13 +287,12 @@ def add_datagroup():
             records.append({'name': record_name, 'data': record_data})
         
         datagroups = read_json(DATAGROUPS_FILE)
-        description = f"Last modified by F5 DGM on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC"
-        datagroups.append({'name': dg_name, 'type': type_, 'description': description, 'records': records})
+        datagroups.append({'name': dg_name, 'description': description, 'type': type_, 'description': description, 'records': records})
         write_json(DATAGROUPS_FILE, datagroups)
         flash('Data group added successfully!')
         return redirect(url_for('index'))
-    
-    return render_template('add_datagroup.html')
+
+    return render_template('add_datagroup.html', timestamp = str(f'{datetime.now(timezone.utc).strftime('%m-%d-%Y at %H:%M:%S')} UTC'))
 
 # App route for deleting a local copy of a datagroup
 @app.route('/remove_datagroup', methods=['POST'])
@@ -342,7 +341,7 @@ def export_datagroup_csv():
         csv_bytes,
         mimetype='text/csv',
         as_attachment=True,
-        download_name=f'datagroup-{datagroup['name']}-export-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.csv'
+        download_name=f'datagroup-{datagroup['name']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv'
     )
 
 # App Route for exporting to JSON
@@ -364,7 +363,7 @@ def export_datagroup_json():
         json_bytes,
         mimetype='application/json',
         as_attachment=True,
-        download_name=f'datagroup-{datagroup_name}-export-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.json'
+        download_name=f'datagroup-{datagroup_name}-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.json'
     )
 
 # App route for importing a datagroup from file
@@ -692,13 +691,10 @@ def update_datagroup():
         
         for record_name, record_data in zip(names, datas):
             new_records.append({'name': record_name, 'data': record_data})
-        
-        description = f"Last modified by F5 DGM on {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC"
-        
+                
         for dg in datagroups:
             if dg['name'] == name:
                 dg['records'] = new_records
-                dg['description'] = description
                 break
         
         write_json(DATAGROUPS_FILE, datagroups)
@@ -871,6 +867,167 @@ def update_device_credentials():
             flash('Device not found!')
             return redirect(url_for('big_ips'))
 
+# App route to browsing datagroups on the BIG-IP
+@app.route('/browse_datagroups/<device_name>', methods=['GET'])
+def browse_datagroups(device_name):
+    devices = read_json(DEVICES_FILE)
+    device = next((d for d in devices if d['name'] == device_name), None)
+    if not device:
+        flash(f'Device {device_name} not found')
+        return redirect(url_for('big_ips'))
+
+    datagroups = fetch_datagroups_from_bigip(device)
+    if not datagroups:
+        flash(f'No data groups found on device {device_name}')
+        return redirect(url_for('big_ips'))
+
+    return render_template('browse_datagroups.html', device=device, datagroups=datagroups)
+
+@app.route('/export_all_datagroups_json/<device_name>', methods=['GET'])
+def export_all_datagroups_json(device_name):
+    devices = read_json(DEVICES_FILE)
+    device = next((d for d in devices if d['name'] == device_name), None)
+    if not device:
+        flash(f'Device {device_name} not found')
+        return redirect(url_for('big_ips'))
+
+    datagroups = fetch_datagroups_from_bigip(device)
+    if not datagroups:
+        flash(f'No data groups found on device {device_name}')
+        return redirect(url_for('big_ips'))
+
+    filename = f'all-data-groups-{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.json'
+    
+    json_bytes = BytesIO(json.dumps(datagroups).encode('utf-8'))
+    json_bytes.seek(0)
+
+    return send_file(
+        json_bytes,
+        mimetype='application/json',
+        as_attachment=True,
+        download_name=filename
+    )
+
+@app.route('/export_all_datagroups_csv/<device_name>', methods=['GET'])
+def export_all_datagroups_csv(device_name):
+    devices = read_json(DEVICES_FILE)
+    device = next((d for d in devices if d['name'] == device_name), None)
+    if not device:
+        flash(f'Device {device_name} not found')
+        return redirect(url_for('big_ips'))
+
+    datagroups = fetch_datagroups_from_bigip(device)
+    if not datagroups:
+        flash(f'No data groups found on device {device_name}')
+        return redirect(url_for('big_ips'))
+
+    filename = f'all-data-groups-{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv'
+
+    csv_string = StringIO()
+    writer = csv.writer(csv_string)
+    writer.writerow(['Data Group', 'Partition', 'Type', 'Name', 'Data'])
+
+    for datagroup in datagroups:
+        for record in datagroup['records']:
+            writer.writerow([datagroup['name'], datagroup['partition'], datagroup['type'], record['name'], record['data']])
+
+    csv_bytes = BytesIO(csv_string.getvalue().encode('utf-8'))
+    csv_bytes.seek(0)
+
+    return send_file(
+        csv_bytes,
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=filename
+    )
+
+# Route to export datagroup from BIG-IP to CSV
+@app.route('/export_datagroup_from_bigip_csv', methods=['GET'])
+def export_datagroup_from_bigip_csv():
+    device_name = request.args.get('device_name')
+    datagroup_name = request.args.get('datagroup_name')
+
+    devices = read_json(DEVICES_FILE)
+    device = next((d for d in devices if d['name'] == device_name), None)
+    if not device:
+        flash(f'Device {device_name} not found')
+        return redirect(url_for('index'))
+
+    datagroup = fetch_and_filter_datagroup_from_device(device, datagroup_name)
+    if not datagroup:
+        flash(f'Data group {datagroup_name} not found on device {device_name}')
+        return redirect(url_for('index'))
+
+    # Create a string-based buffer and write CSV data to it
+    csv_string = StringIO()
+    writer = csv.writer(csv_string)
+    writer.writerow(['Data Group', 'Type', 'Name', 'Data'])
+
+    for record in datagroup.get('records', []):
+        writer.writerow([datagroup['name'], datagroup['type'], record['name'], record.get('data', '')])
+
+    # Convert the string buffer to a bytes buffer
+    csv_bytes = BytesIO(csv_string.getvalue().encode('utf-8'))
+    csv_bytes.seek(0)
+
+    filename = f"datagroup-{datagroup_name}_exported_from_{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv"
+    return send_file(
+        csv_bytes,
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=filename
+    )
+
+# Route to export datagroup from BIG-IP to JSON
+@app.route('/export_datagroup_from_bigip_json', methods=['GET'])
+def export_datagroup_from_bigip_json():
+    device_name = request.args.get('device_name')
+    datagroup_name = request.args.get('datagroup_name')
+
+    devices = read_json(DEVICES_FILE)
+    device = next((d for d in devices if d['name'] == device_name), None)
+    if not device:
+        flash(f'Device {device_name} not found')
+        return redirect(url_for('index'))
+
+    datagroup = fetch_and_filter_datagroup_from_device(device, datagroup_name)
+    if not datagroup:
+        flash(f'Data group {datagroup_name} not found on device {device_name}')
+        return redirect(url_for('index'))
+
+    # Convert the datagroup to JSON bytes
+    json_bytes = BytesIO(json.dumps(datagroup).encode('utf-8'))
+    json_bytes.seek(0)
+
+    filename = f"datagroup-{datagroup_name}_exported_from_{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.json"
+    return send_file(
+        json_bytes,
+        mimetype='application/json',
+        as_attachment=True,
+        download_name=filename
+    )
+
+# Helper function to fetch datagroup from BIG-IP and filter fields
+def fetch_and_filter_datagroup_from_device(device, datagroup_name):
+    url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal/{datagroup_name}"
+    decrypted_password = decrypt_password(device['password'])
+    if not decrypted_password:
+        flash(f'Failed to decrypt the password for device: {device["name"]}')
+        return None
+
+    auth = HTTPBasicAuth(device['username'], decrypted_password)
+    try:
+        response = requests.get(url, auth=auth, verify=False)
+        response.raise_for_status()
+        datagroup = response.json()
+        # Remove unwanted fields
+        for field in ["kind", "fullPath", "generation", "selfLink"]:
+            datagroup.pop(field, None)
+        return datagroup
+    except requests.exceptions.RequestException as e:
+        flash(f'Failed to fetch data group {datagroup_name} from device {device["name"]}: {str(e)}')
+        return None
+    
 # Route for deleting datagroups on BIG-IPs
 @app.route('/remove_datagroup_from_bigips', methods=['GET', 'POST'])
 def remove_datagroup_from_bigips():
@@ -928,7 +1085,20 @@ def fetch_datagroups_from_bigip(device):
         response = requests.get(url, auth=auth, verify=False)
         response.raise_for_status()
         datagroups = response.json().get('items', [])
-        return datagroups
+        
+        # Filter the datagroups to only include the desired fields
+        filtered_datagroups = []
+        for dg in datagroups:
+            filtered_dg = {
+                'name': dg.get('name'),
+                'partition': dg.get('partition'),
+                'type': dg.get('type'),
+                'description': dg.get('description', ''),
+                'records': dg.get('records', [])
+            }
+            filtered_datagroups.append(filtered_dg)
+        
+        return filtered_datagroups    
     except requests.exceptions.RequestException as e:
         flash(f'Failed to fetch data groups from device: {device["name"]}, error: {str(e)}')
         return []

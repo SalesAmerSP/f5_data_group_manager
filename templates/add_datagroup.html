@@ -5,7 +5,8 @@
 <form method="post" action="{{ url_for('add_datagroup') }}" onsubmit="return validateForm()">
     <label for="name">Data Group Name:</label>
     <input type="text" id="name" name="name" required>
-    <br><br>
+    <label for="name">Data Group Descriptio:</label>
+    <input type="text" id="description" name="description" value="Created by F5 DGM on {{ timestamp }}" style="color: lightgray; font-style: italic;">
     <label for="type">Data Group Type:</label>
     <select id="type" name="type" required onchange="handleTypeChange()">
         <option value="" disabled selected>Select a Type</option>
@@ -13,12 +14,11 @@
         <option value="integer">integer</option>
         <option value="ip">ip</option>
     </select>
-    <br><br>
     <label for="records">Records:</label>
     <div id="records">
         <div class="record">
-            <input type="text" name="records_name" placeholder="Name" required oninput="highlightChanged(this)">
-            <input type="text" name="records_data" placeholder="Data" oninput="highlightChanged(this)">
+            <input type="text" name="records_name" placeholder="Name" required>
+            <input type="text" name="records_data" placeholder="Data">
             <button type="button" onclick="removeRecord(this)">Delete</button>
         </div>
     </div>
@@ -28,28 +28,34 @@
 </form>
 
 <script>
+
+document.addEventListener("DOMContentLoaded", function() {
+    const descriptionInput = document.getElementById('description');
+    const defaultValue = descriptionInput.value;
+
+    descriptionInput.addEventListener('focus', function() {
+        if (this.value === defaultValue) {
+            this.value = defaultValue;
+            this.style.color = '';
+            this.style.fontStyle = '';
+        }
+    });
+
+});
+
 function addRecord() {
     const recordDiv = document.createElement('div');
     recordDiv.className = 'record';
     recordDiv.innerHTML = `
-        <input type="text" name="records_name" placeholder="Name" required oninput="highlightChanged(this)">
-        <input type="text" name="records_data" placeholder="Data" oninput="highlightChanged(this)">
+        <input type="text" name="records_name" placeholder="Name" required>
+        <input type="text" name="records_data" placeholder="Data">
         <button type="button" onclick="removeRecord(this)">Delete</button>
     `;
-    highlightChanged(recordDiv.querySelectorAll('input'));
     document.getElementById('records').appendChild(recordDiv);
 }
 
 function removeRecord(button) {
     button.parentElement.remove();
-}
-
-function highlightChanged(inputs) {
-    if (inputs.length) {
-        inputs.forEach(input => input.style.backgroundColor = 'yellow');
-    } else {
-        inputs.style.backgroundColor = 'yellow';
-    }
 }
 
 function handleTypeChange() {
@@ -126,10 +132,5 @@ function isValidCIDR(cidr) {
     return false;
 }
 
-document.querySelectorAll('input[name="records_name"], input[name="records_data"]').forEach(input => {
-    input.addEventListener('input', function() {
-        highlightChanged(this);
-    });
-});
 </script>
 {% endblock %}
