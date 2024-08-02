@@ -65,7 +65,7 @@ try:
     with open('secret.key', 'r') as f:
         app.secret_key = f.read().strip()
         if not app.secret_key:
-            raise ValueError("Secret key file is empty")
+            raise ValueError("Secret key file is empty. Execute the create_secret_key.py file to create one in the project root directory.")
 except FileNotFoundError:
     print("Error: 'secret.key' file not found. Please ensure the file exists.")
     exit(1)
@@ -264,7 +264,7 @@ def import_from_file():
                             flash(f'Invalid JSON format: {new_datagroups}')
                             return redirect(request.url)
                         for dg in new_datagroups:
-                            if dg['type'] not in ["string", "integer", "address"]:
+                            if dg['type'] not in ["string", "integer", "ip"]:
                                 flash(f'Invalid data group type: {dg["type"]}')
                                 return redirect(request.url)
                             if dg['type'] == "integer":
@@ -274,7 +274,7 @@ def import_from_file():
                                     except ValueError:
                                         flash(f'For Data Group type "integer", all Name values must be integers: {record["name"]}')
                                         return redirect(request.url)
-                            if dg['type'] == "address":
+                            if dg['type'] == "ip":
                                 for record in dg['records']:
                                     try:
                                         if '/' in record['name']:
@@ -314,8 +314,8 @@ def lint_datagroup_csv(file_path):
             for row in reader:
                 if len(row) != 4:
                     return False, 'Each row must have exactly four values: Data Group, Type, Name, Data'
-                if row[1] not in ["string", "integer", "address"]:
-                    return False, 'Data Group type must be "string", "integer", or "address"'
+                if row[1] not in ["string", "integer", "ip"]:
+                    return False, 'Data Group type must be "string", "integer", or "ip"'
                 if row[1] == "integer":
                     try:
                         int(row[2])
@@ -328,7 +328,7 @@ def lint_datagroup_csv(file_path):
                         else:
                             ip_address(row[2])
                     except ValueError:
-                        return False, 'For Data Group type "address", all Name values must be valid IPv4 or IPv6 addresses or subnets in CIDR notation'
+                        return False, 'For Data Group type "ip", all Name values must be valid IPv4 or IPv6 addresses or subnets in CIDR notation'
             return True, "CSV format is correct"
     except Exception as e:
         return False, str(e)
@@ -581,7 +581,7 @@ def import_values(name):
                     except ValueError:
                         flash('Import failed: All name values must be an integer for integer type data groups')
                         return redirect(url_for('update_datagroup', name=name))
-                elif datagroup['type'] == 'address':
+                elif datagroup['type'] == 'ip':
                     for record in new_records:
                         try:
                             if '/' in record['name']:
@@ -589,7 +589,7 @@ def import_values(name):
                             else:
                                 ip_address(record['name'])
                         except ValueError:
-                            flash('Import failed: All name values must be valid IPv4 or IPv6 addresses or subnets in CIDR notation with address type data groups')
+                            flash('Import failed: All name values must be valid IPv4 or IPv6 addresses or subnets in CIDR notation with IP type data groups')
                             return redirect(url_for('update_datagroup', name=name))
                             
                 datagroup['records'].extend(new_records)
@@ -689,37 +689,7 @@ def update_device_credentials():
             flash('Device not found!')
             return redirect(url_for('big_ips'))
 
-
-def export_datagroup__from_bigip_csv(datagroup):
-    csv_string = StringIO()
-    writer = csv.writer(csv_string)
-    writer.writerow(['Data Group', 'Type', 'Name', 'Data'])
-
-    for record in datagroup['records']:
-        writer.writerow([datagroup['name'], datagroup['type'], record['name'], record.get('data', '')])
-
-    csv_bytes = BytesIO(csv_string.getvalue().encode('utf-8'))
-    csv_bytes.seek(0)
-
-    return send_file(
-        csv_bytes,
-        mimetype='text/csv',
-        as_attachment=True,
-        download_name=f'datagroup-{datagroup["name"]}-export.csv'
-    )
-
-def export_datagroup_from_bigip_json(datagroup):
-    json_bytes = BytesIO(json.dumps(datagroup).encode('utf-8'))
-    json_bytes.seek(0)
-
-    return send_file(
-        json_bytes,
-        mimetype='application/json',
-        as_attachment=True,
-        download_name=f'datagroup-{datagroup["name"]}-export.json'
-    )
-
-# App route to remove datagroups from BIG-IPs
+# Route for deleting datagroups on BIG-IPs
 @app.route('/remove_datagroup_from_bigips', methods=['GET', 'POST'])
 def remove_datagroup_from_bigips():
     devices = read_json(DEVICES_FILE)
@@ -729,6 +699,9 @@ def remove_datagroup_from_bigips():
     for device in devices:
         datagroups = fetch_datagroups_from_bigip(device)
         if datagroups:
+            for dg in datagroups:
+                dg['partition'] = dg.get('partition', 'Common')
+                dg['records_count'] = len(dg.get('records', []))
             device['datagroups'] = datagroups
             device_datagroups.append(device)
 
@@ -773,9 +746,6 @@ def fetch_datagroups_from_bigip(device):
         response = requests.get(url, auth=auth, verify=False)
         response.raise_for_status()
         datagroups = response.json().get('items', [])
-        for dg in datagroups:
-            dg['records_count'] = len(dg.get('records', []))
-            dg['partition'] = dg.get('partition', 'Common')
         return datagroups
     except requests.exceptions.RequestException as e:
         flash(f'Failed to fetch data groups from device: {device["name"]}, error: {str(e)}')
@@ -821,11 +791,11 @@ def deploy_datagroups():
                     if datagroup:
                         if not deploy_datagroup_to_device(device, datagroup):
                             failed_devices.append(device_name)
+                        else:
+                            flash(f"Deployed datagroup {datagroup['name']} to {device['name']} successfully!")
         
         if failed_devices:
             flash(f'Failed to deploy data groups to devices: {", ".join(failed_devices)}')
-        else:
-            flash('Data groups deployed successfully to all selected devices!')
         return redirect(url_for('index'))
     
     return render_template('deploy_datagroups.html', devices=devices, datagroups=datagroups)
@@ -856,7 +826,7 @@ def deploy_datagroup_to_device(device, datagroup):
         if response.status_code == 404:
             exists = False
         else:
-            flash(f'HTTP error occurred for {device}: {http_err} (Response: {response.text})')
+            flash(f'HTTP error occurred for {device['name']}: {http_err} (Response: {response.text})')
             return False
     except Exception as err:
         flash(f'Error occurred: {err} (Payload: {datagroup}) (Response: {response.text})')
@@ -872,7 +842,7 @@ def deploy_datagroup_to_device(device, datagroup):
         response.raise_for_status()
         return True
     except requests.exceptions.HTTPError as http_err:
-        flash(f'HTTP error occurred for {device} {exists}: {http_err} (Payload: {datagroup}) (Response: {response.text})')
+        flash(f'HTTP error occurred for {device['name']}: {http_err} (Payload: {datagroup}) (Response: {response.text})')
         return False
     except Exception as err:
         flash(f'Error occurred: {err}')

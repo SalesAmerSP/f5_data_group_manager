@@ -1,6 +1,6 @@
 {
   "name": "valid_address_datagroup",
-  "type": "address",
+  "type": "ip",
   "description": "Imported by F5 DGM on 2024-08-01 09:28:24 UTC",
   "records": [
     {

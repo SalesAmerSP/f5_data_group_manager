@@ -9,9 +9,9 @@
     <label for="type">Data Group Type:</label>
     <select id="type" name="type" required onchange="handleTypeChange()">
         <option value="" disabled selected>Select a Type</option>
-        <option value="string">String</option>
-        <option value="integer">Integer</option>
-        <option value="address">Address</option>
+        <option value="string">string</option>
+        <option value="integer">integer</option>
+        <option value="ip">ip</option>
     </select>
     <br><br>
     <label for="records">Records:</label>
@@ -82,8 +82,8 @@ function validateForm() {
             return false;
         }
         
-        if (datagroupType === 'address' && !isValidIPAddress(name.value) && !isValidCIDR(name.value)) {
-            alert('Name must be a valid IP address or CIDR notation for address type data groups.');
+        if (datagroupType === 'ip' && !isValidIPAddress(name.value) && !isValidCIDR(name.value)) {
+            alert('Name must be a valid IP address or CIDR notation for ip type data groups.');
             name.style.backgroundColor = 'red';
             return false;
         }

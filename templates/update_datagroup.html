@@ -142,8 +142,8 @@ function validateForm() {
             return false;
         }
         
-        if (datagroupType === 'address' && !isValidIPAddress(name.value) && !isValidCIDR(name.value)) {
-            alert('Name must be a valid IP address or CIDR notation for address type data groups.');
+        if (datagroupType === 'ip' && !isValidIPAddress(name.value) && !isValidCIDR(name.value)) {
+            alert('Name must be a valid IP address or CIDR notation for ip type data groups.');
             name.style.backgroundColor = 'red';
             return false;
         }

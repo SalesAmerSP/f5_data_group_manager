@@ -17,10 +17,10 @@
                 {% for datagroup in device.datagroups %}
                 <tr>
                     <td>
-                        <input type="checkbox" id="datagroups_{{ device.name }}_{{ datagroup }}" name="datagroups_{{ device.name }}" value="{{ datagroup }}">
+                        <input type="checkbox" id="datagroups_{{ device.name }}_{{ datagroup }}" name="datagroups_{{ device.name }}" value="{{ datagroup.name }}">
                     </td>
                     <td>
-                        <label for="datagroups_{{ device.name }}_{{ datagroup }}">{{ datagroup }}</label>
+                        <label for="datagroups_{{ device.name }}_{{ datagroup }}">{{ datagroup.name }}</label>
                     </td>
                 </tr>
                 {% endfor %}
