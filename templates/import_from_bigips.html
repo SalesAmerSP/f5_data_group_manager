@@ -2,25 +2,49 @@
 
 {% block content %}
 <h2>Import Data Groups from BIG-IP</h2>
+
+<div style="border: 2px solid red; padding: 10px; margin-bottom: 20px;">
+    <div style="background-color: red; color: white; padding: 5px;">
+        <strong>Notice</strong>
+    </div>
+    <p style="color: red; font-weight: bold;">
+        Importing identically named data groups from multiple instances is not supported.
+    </p>
+</div>
+
+<div>
+    <input type="checkbox" id="ignore_builtin" onclick="toggleBuiltIn()" checked> Ignore built-in data groups
+</div>
+
 <form method="post" action="{{ url_for('import_from_bigips') }}">
+    <input type="hidden" name="ignore_builtin" id="ignore_builtin_hidden">
     {% for device in devices %}
     <div class="device-container">
         <h3>{{ device.name }} ({{ device.address }})</h3>
+        <button type="button" onclick="selectAll('{{ device.name }}')">Select All Data Groups from {{ device.name }}</button>
         <table class="datagroups-table">
             <thead>
                 <tr>
                     <th>Select</th>
-                    <th>Data Group Name</th>
+                    <th>Partition</th>
+                    <th>Name</th>
+                    <th>Records Count</th>
                 </tr>
             </thead>
             <tbody>
                 {% for datagroup in device.datagroups %}
-                <tr>
+                <tr class="datagroup_row" data-partition="{{ datagroup.partition }}" data-name="{{ datagroup.name }}">
                     <td>
                         <input type="checkbox" id="datagroups_{{ device.name }}_{{ datagroup }}" name="datagroups_{{ device.name }}" value="{{ datagroup.name }}">
                     </td>
                     <td>
+                        <label for="datagroups_{{ device.name }}_{{ datagroup }}">{{ datagroup.partition }}</label>
+                    </td>
+                    <td>
                         <label for="datagroups_{{ device.name }}_{{ datagroup }}">{{ datagroup.name }}</label>
+                    </td>
+                    <td>
+                        <label for="datagroups_{{ device.name }}_{{ datagroup }}">{{ datagroup.records_count }}</label>
                     </td>
                 </tr>
                 {% endfor %}
@@ -58,4 +82,43 @@
 }
 </style>
 
+<script>
+    const TMOS_BUILT_IN_DATA_GROUPS = {{ TMOS_BUILT_IN_DATA_GROUPS|tojson|safe }};
+
+    function selectAll(deviceName) {
+        var checkboxes = document.querySelectorAll('input[name="datagroups_' + deviceName + '"]');
+        checkboxes.forEach(function(checkbox) {
+            checkbox.checked = true;
+        });
+    }
+
+    function toggleBuiltIn() {
+        var ignoreBuiltIn = document.getElementById('ignore_builtin').checked;
+        var rows = document.querySelectorAll('.datagroup_row');
+        rows.forEach(function(row) {
+            var partition = row.getAttribute('data-partition');
+            var name = row.getAttribute('data-name');
+            var isBuiltIn = TMOS_BUILT_IN_DATA_GROUPS.some(dg => dg.partition === partition && dg.name === name);
+            if (ignoreBuiltIn && isBuiltIn) {
+                row.style.display = 'none';
+            } else {
+                row.style.display = '';
+            }
+        });
+        document.getElementById('ignore_builtin_hidden').value = ignoreBuiltIn ? 'on' : 'off';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        toggleBuiltIn(); // Call once to hide built-in data groups on load if checkbox is checked
+    });
+    
+</script>
+    
 {% endblock %}
+
+
+
+
+
+
+
