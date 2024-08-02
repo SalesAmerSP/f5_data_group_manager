@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Select Data Groups to Import</h2>
+<form method="post" action="{{ url_for('import_selected_datagroups') }}">
+    <input type="hidden" name="selected_devices" value="{{ selected_devices|tojson }}">
+    {% for device in selected_devices %}
+        <h3>{{ device.name }} ({{ device.address }})</h3>
+        <label>Select Data Groups:</label>
+        <br>
+        <table>
+            {% for datagroup in device.datagroups %}
+            <tr>
+                <td style="text-align: center;">
+                    <input type="checkbox" name="datagroups_{{ device.name }}" value="{{ datagroup }}">
+                </td>
+                <td>{{ datagroup }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
+    <br>
+    <button type="submit">Import Selected Data Groups</button>
+</form>
+{% endblock %}

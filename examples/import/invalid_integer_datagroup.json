@@ -1,0 +1,19 @@
+{
+  "name": "invalid_integer_datagroup",
+  "type": "integer",
+  "description": "",
+  "records": [
+    {
+      "name": 1,
+      "data": "apple"
+    },
+    {
+      "name": "-295",
+      "data": "banana"
+    },
+    {
+      "name": "chocolate",
+      "data": "3"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Import Data Groups from BIG-IP</h2>
+<form method="post" action="{{ url_for('import_from_bigips') }}">
+    {% for device in devices %}
+    <div class="device-container">
+        <h3>{{ device.name }} ({{ device.address }})</h3>
+        <table class="datagroups-table">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Data Group Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for datagroup in device.datagroups %}
+                <tr>
+                    <td>
+                        <input type="checkbox" id="datagroups_{{ device.name }}_{{ datagroup }}" name="datagroups_{{ device.name }}" value="{{ datagroup.name }}">
+                    </td>
+                    <td>
+                        <label for="datagroups_{{ device.name }}_{{ datagroup }}">{{ datagroup.name }}</label>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+    <br>
+    <button type="submit">Import Data Groups</button>
+</form>
+
+<style>
+.device-container {
+    margin-bottom: 20px;
+}
+
+.datagroups-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.datagroups-table th, .datagroups-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.datagroups-table th {
+    background-color: #f2f2f2;
+}
+
+.datagroups-table th, .datagroups-table td:nth-child(1) {
+    text-align: center;
+}
+</style>
+
+{% endblock %}

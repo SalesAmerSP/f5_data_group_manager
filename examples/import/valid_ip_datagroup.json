@@ -1,0 +1,23 @@
+{
+  "name": "valid_address_datagroup",
+  "type": "ip",
+  "description": "Imported by F5 DGM on 2024-08-01 09:28:24 UTC",
+  "records": [
+    {
+      "name": "192.168.1.1",
+      "data": ""
+    },
+    {
+      "name": "192.168.1.0/24",
+      "data": ""
+    },
+    {
+      "name": "192.168.1.1/32",
+      "data": ""
+    },
+    {
+      "name": "2607:f480::1",
+      "data": ""
+    }
+  ]
+}

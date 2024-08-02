@@ -1,0 +1,23 @@
+{
+  "name": "invalid_address_datagroup",
+  "type": "ip",
+  "description": "",
+  "records": [
+    {
+      "name": "192.168.1.394",
+      "data": ""
+    },
+    {
+      "name": "192.168.1.25/24",
+      "data": ""
+    },
+    {
+      "name": "192.168.1.256/32",
+      "data": ""
+    },
+    {
+      "name": "2607:f480::1/64",
+      "data": ""
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Remove Device</h2>
+<form method="post" action="{{ url_for('remove_device') }}">
+    <label for="name">Select Device to Remove:</label>
+    <select id="name" name="name" required>
+        {% for device in devices %}
+        <option value="{{ device.name }}">{{ device.name }}</option>
+        {% endfor %}
+    </select>
+    <br>
+    <input type="checkbox" id="confirm" name="confirm" required>
+    <label for="confirm">I confirm that I want to remove this device.</label>
+    <br>
+    <button type="submit">Remove Device</button>
+</form>
+{% endblock %}
