@@ -2,9 +2,17 @@
 
 {% block content %}
 {% if selected_datagroup %}
-<h2>Update Data Group: {{ selected_datagroup.name }} ({{ selected_datagroup.type }})</h2>
+<h2>Update Data Group: {{ selected_datagroup.name }}</h2>
 <form method="post" action="{{ url_for('update_datagroup') }}" onsubmit="return validateForm()">
-    <div style="text-align: right;">
+    <div>
+        <label for="name">Data Group Type:</label>
+        <select id="type" name="type">
+            <option value="{{ selected_datagroup.type }}" selected>{{ selected_datagroup.type }}</option>
+        </select>
+        <label for="name">Data Group Description:</label>
+        <input type="text" id="description" name="description" value="{{ description }}">
+    </div>
+        <div style="text-align: right;">
         <button type="submit">Apply Changes</button>
     </div>
     <input type="hidden" name="name" value="{{ selected_datagroup.name }}">

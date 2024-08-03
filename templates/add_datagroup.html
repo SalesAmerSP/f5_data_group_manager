@@ -5,7 +5,7 @@
 <form method="post" action="{{ url_for('add_datagroup') }}" onsubmit="return validateForm()">
     <label for="name">Data Group Name:</label>
     <input type="text" id="name" name="name" required>
-    <label for="name">Data Group Descriptio:</label>
+    <label for="name">Data Group Description:</label>
     <input type="text" id="description" name="description" value="Created by F5 DGM on {{ timestamp }}" style="color: lightgray; font-style: italic;">
     <label for="type">Data Group Type:</label>
     <select id="type" name="type" required onchange="handleTypeChange()">
@@ -19,12 +19,12 @@
         <div class="record">
             <input type="text" name="records_name" placeholder="Name" required>
             <input type="text" name="records_data" placeholder="Data">
-            <button type="button" onclick="removeRecord(this)">Delete</button>
+            <button type="button" class="red-button" onclick="removeRecord(this)">Delete</button>
         </div>
     </div>
-    <button type="button" onclick="addRecord()">Add Record</button>
+    <button type="button" class="button" onclick="addRecord()">Add Record</button>
     <br><br>
-    <button type="submit">Add Data Group</button>
+    <button type="submit" class="button">Add Data Group</button>
 </form>
 
 <script>

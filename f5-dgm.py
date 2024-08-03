@@ -513,10 +513,12 @@ def import_from_url():
         if not url:
             flash('URL is required')
             return redirect(request.url)
-        
         try:
-            response = requests.get(url)
+            response = requests.get(url, verify=False, timeout=15)
             response.raise_for_status()
+        except requests.exceptions.Timeout:
+            flash(f'Timeout exceeded while trying to reach {device["name"]}')
+            return []
         except requests.RequestException as e:
             flash(f'Failed to download file: {e}')
             return redirect(request.url)
@@ -639,10 +641,13 @@ def fetch_datagroups_from_bigip(device):
 
     auth = HTTPBasicAuth(device['username'], decrypted_password)
     try:
-        response = requests.get(url, auth=auth, verify=False)
+        response = requests.get(url, auth=auth, verify=False, timeout=5)
         response.raise_for_status()
         datagroups = [dg['name'] for dg in response.json().get('items', [])]
         return datagroups
+    except requests.exceptions.Timeout:
+        flash(f'Timeout exceeded while trying to reach {device["name"]}')
+        return []
     except requests.exceptions.RequestException as e:
         flash(f'Failed to fetch data groups from device: {device["name"]}, error: {str(e)}')
         return []
@@ -664,7 +669,7 @@ def import_datagroup_from_device(device, datagroup_name):
 
     auth = HTTPBasicAuth(device['username'], decrypted_password)
     try:
-        response = requests.get(url, auth=auth, verify=False)
+        response = requests.get(url, auth=auth, verify=False, timeout=5)
         response.raise_for_status()
         datagroup = response.json()
         datagroups = read_json(DATAGROUPS_FILE)
@@ -675,6 +680,9 @@ def import_datagroup_from_device(device, datagroup_name):
             datagroups.append(datagroup)
         write_json(DATAGROUPS_FILE, datagroups)
         return True
+    except requests.exceptions.Timeout:
+        flash(f'Timeout exceeded while trying to reach {device["name"]}')
+        return []
     except requests.exceptions.RequestException as e:
         flash(f'Failed to import data group {datagroup_name} from device: {device["name"]}, error: {str(e)}')
         return False
@@ -702,11 +710,13 @@ def update_datagroup():
         return redirect(url_for('index'))
     
     selected_datagroup = None
+    description = ""
     selected_name = request.args.get('name')
     if selected_name:
         selected_datagroup = next((dg for dg in datagroups if dg['name'] == selected_name), None)
-    
-    return render_template('update_datagroup.html', datagroups=datagroups, selected_datagroup=selected_datagroup)
+    if 'description' in selected_datagroup:
+        description = selected_datagroup['description']
+    return render_template('update_datagroup.html', datagroups=datagroups, selected_datagroup=selected_datagroup, description=description)
 
 # App route for importing values into an existing datagroup
 # App route for importing values into an existing datagroup
@@ -1017,13 +1027,16 @@ def fetch_and_filter_datagroup_from_device(device, datagroup_name):
 
     auth = HTTPBasicAuth(device['username'], decrypted_password)
     try:
-        response = requests.get(url, auth=auth, verify=False)
+        response = requests.get(url, auth=auth, verify=False, timeout=5)
         response.raise_for_status()
         datagroup = response.json()
         # Remove unwanted fields
         for field in ["kind", "fullPath", "generation", "selfLink"]:
             datagroup.pop(field, None)
         return datagroup
+    except requests.exceptions.Timeout:
+        flash(f'Timeout exceeded while trying to reach {device["name"]}')
+        return []
     except requests.exceptions.RequestException as e:
         flash(f'Failed to fetch data group {datagroup_name} from device {device["name"]}: {str(e)}')
         return None
@@ -1082,7 +1095,7 @@ def fetch_datagroups_from_bigip(device):
 
     auth = HTTPBasicAuth(device['username'], decrypted_password)
     try:
-        response = requests.get(url, auth=auth, verify=False)
+        response = requests.get(url, auth=auth, verify=False, timeout=5)
         response.raise_for_status()
         datagroups = response.json().get('items', [])
         
@@ -1099,6 +1112,9 @@ def fetch_datagroups_from_bigip(device):
             filtered_datagroups.append(filtered_dg)
         
         return filtered_datagroups    
+    except requests.exceptions.Timeout:
+        flash(f'Timeout exceeded while trying to reach {device["name"]}')
+        return []
     except requests.exceptions.RequestException as e:
         flash(f'Failed to fetch data groups from device: {device["name"]}, error: {str(e)}')
         return []
@@ -1112,9 +1128,12 @@ def delete_datagroup_from_device(device, datagroup_name):
     
     auth = HTTPBasicAuth(device['username'], decrypted_password)
     try:
-        response = requests.delete(url, auth=auth, verify=False)
+        response = requests.delete(url, auth=auth, verify=False, timeout=5)
         response.raise_for_status()
         return True
+    except requests.exceptions.Timeout:
+        flash(f'Timeout exceeded while trying to reach {device["name"]}')
+        return []
     except requests.exceptions.RequestException as e:
         flash(f'Failed to delete data group {datagroup_name} from device {device["name"]}: {str(e)}')
         return False
@@ -1171,7 +1190,7 @@ def deploy_datagroup_to_device(device, datagroup):
 
     # Check if the data group exists
     try:
-        response = requests.get(url, auth=auth, headers=headers, verify=False)
+        response = requests.get(url, auth=auth, headers=headers, verify=False, timeout=5)
         response.raise_for_status()
         exists = True
     except requests.exceptions.HTTPError as http_err:
@@ -1180,6 +1199,9 @@ def deploy_datagroup_to_device(device, datagroup):
         else:
             flash(f'HTTP error occurred for {device['name']}: {http_err} (Response: {response.text})')
             return False
+    except requests.exceptions.Timeout:
+        flash(f'Timeout exceeded while trying to reach {device["name"]}')
+        return []
     except Exception as err:
         flash(f'Error occurred: {err} (Payload: {datagroup}) (Response: {response.text})')
         return False
@@ -1187,12 +1209,15 @@ def deploy_datagroup_to_device(device, datagroup):
     # Create or update the data group
     try:
         if exists:
-            response = requests.put(url, auth=auth, headers=headers, json=datagroup, verify=False)
+            response = requests.put(url, auth=auth, headers=headers, json=datagroup, verify=False, timeout=5)
         else:
             url = f"https://{device['address']}/mgmt/tm/ltm/data-group/internal"
-            response = requests.post(url, auth=auth, headers=headers, json=datagroup, verify=False)
+            response = requests.post(url, auth=auth, headers=headers, json=datagroup, verify=False, timeout=5)
         response.raise_for_status()
         return True
+    except requests.exceptions.Timeout:
+        flash(f'Timeout exceeded while trying to reach {device["name"]}')
+        return []
     except requests.exceptions.HTTPError as http_err:
         flash(f'HTTP error occurred for {device['name']}: {http_err} (Payload: {datagroup}) (Response: {response.text})')
         return False
