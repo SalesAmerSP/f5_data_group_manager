@@ -515,8 +515,18 @@ def import_values(name):
 # App route for the BIG-IP devices page
 @app.route('/big_ips')
 def big_ips():
-    devices = read_json(DEVICES_FILE)
-    return render_template('big_ips.html', devices=devices)
+    try:
+        devices = read_json(DEVICES_FILE)
+        return render_template('big_ips.html', devices=devices)
+    except FileNotFoundError:
+        flash('Devices file not found', 'error')
+        return redirect(url_for('index'))
+    except json.JSONDecodeError:
+        flash('Error decoding JSON from devices file', 'error')
+        return redirect(url_for('index'))
+    except Exception as e:
+        flash(f'An unexpected error occurred: {str(e)}', 'error')
+        return redirect(url_for('index'))
 
 # App route for adding a BIG-IP device
 @app.route('/add_device', methods=['GET', 'POST'])

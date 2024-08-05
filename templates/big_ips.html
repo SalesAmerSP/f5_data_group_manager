@@ -1,9 +1,7 @@
 {% extends "base.html" %} {% block content %}
 <h2>BIG-IP Devices</h2>
 
-<a href="{{ url_for('add_device') }}" class="button" id="add-device-button"
-  >Add Device</a
->
+<a href="{{ url_for('add_device') }}" class="button" id="add-device-button">Add BIG-IP</a>
 
 <div class="table-container">
   <table>
@@ -18,32 +16,33 @@
       <td>{{ device.address }}</td>
       <td>
         <form
-          action="{{ url_for('remove_device') }}"
-          method="post"
+          action="{{ url_for('browse_datagroups', device_name=device.name) }}"
+          method="get"
           style="display: inline"
-          onsubmit="return confirmDeletion('{{ device.name }}');"
         >
           <input type="hidden" name="device_name" value="{{ device.name }}" />
-          <button type="submit" class="padded-button">Remove</button>
+          <button type="submit" class="button">Browse Data Groups</button>
         </form>
+
         <form
           action="{{ url_for('update_device_credentials') }}"
           method="get"
           style="display: inline"
         >
           <input type="hidden" name="device_name" value="{{ device.name }}" />
-          <button type="submit">Update Credentials</button>
+          <button type="submit" class="button">Update Credentials</button>
         </form>
 
         <form
-          action="{{ url_for('browse_datagroups', device_name=device.name) }}"
-          method="get"
+          action="{{ url_for('remove_device') }}"
+          method="post"
           style="display: inline"
+          onsubmit="return confirmDeletion('{{ device.name }}');"
         >
           <input type="hidden" name="device_name" value="{{ device.name }}" />
-          <button type="submit">Browse Data Groups</button>
+          <button type="submit" class="red-button">Remove</button>
         </form>
-            </td>
+      </td>
     </tr>
     {% endfor %}
   </table>
@@ -57,12 +56,4 @@
   }
 </script>
 
-<style>
-  #add-device-button {
-    margin-bottom: 10px; /* Add 10 pixels of padding between the button and the table */
-  }
-  .padded-button {
-    margin-bottom: 10px; /* Add 10 pixels of padding below each action button */
-  }
-</style>
 {% endblock %}
