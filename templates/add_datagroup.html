@@ -61,11 +61,10 @@ function addRecord() {
     recordDiv.innerHTML = `
         <input type="text" name="records_name" placeholder="Name" required>
         <input type="text" name="records_data" placeholder="Data">
-        <button type="button" onclick="removeRecord(this)">Delete</button>
+        <button type="button" class="red-button" onclick="removeRecord(this)">Delete</button>
     `;
     document.getElementById('records').appendChild(recordDiv);
 }
-
 // Function to remove a record input set
 function removeRecord(button) {
     button.parentElement.remove();

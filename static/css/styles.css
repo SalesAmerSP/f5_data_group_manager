@@ -1,3 +1,4 @@
+/* General Styles */
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
@@ -18,6 +19,7 @@ h1, h2 {
   color: #333;
 }
 
+/* Navigation Styles */
 nav ul {
   list-style: none;
   padding: 0;
@@ -39,6 +41,7 @@ nav ul li a:hover {
   box-shadow: 0 0 5px red;
 }
 
+/* Form Styles */
 form {
   margin: 20px 0;
 }
@@ -70,6 +73,7 @@ form button:hover {
   background: #0056b3;
 }
 
+/* Flash Messages */
 ul.messages {
   list-style: none;
   padding: 0;
@@ -77,21 +81,21 @@ ul.messages {
   color: green;
 }
 
+/* Logo Styles */
 .logo {
   display: flex;
   align-items: center;
+  padding: 10px;
 }
 
 .logo img {
-  width: 150px;  /* Adjust the size as needed */
-  margin-right: 10px;
+  height: auto;
+  width: auto;
+  max-height: 50px;
+  margin-right: 15px;
 }
 
-nav ul li a:hover {
-  color: red;
-  box-shadow: 0 0 5px red;
-}
-
+/* Record Styles */
 .record {
   display: flex;
   align-items: center;
@@ -115,6 +119,7 @@ nav ul li a:hover {
   background: darkred;
 }
 
+/* Checkbox Styles */
 .device-checkbox, .datagroup-checkbox {
   display: flex;
   align-items: center;
@@ -125,6 +130,7 @@ nav ul li a:hover {
   margin-right: 10px;
 }
 
+/* Button Styles */
 .button {
   padding: 10px 20px;
   font-size: 16px;
@@ -144,8 +150,45 @@ nav ul li a:hover {
   background-color: #0056b3;
 }
 
+.red-button {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
 
+.red-button:hover {
+  background-color: darkred;
+}
 
+.green-button {
+  background-color: green;
+  color: white;
+}
+
+.green-button:hover {
+  background-color: darkgreen;
+  color: white;
+}
+
+.button.yellow-button {
+      background-color: yellow;
+      color: black;
+}    
+
+.button.yellow-button:hover {
+  background-color: orange;
+  color: black;
+}    
+
+/* Table Styles */
 table, th, td {
   border: 1px solid black;
 }
@@ -172,49 +215,20 @@ table, th, td {
     padding: 10px; /* Optional: Add padding for better spacing */
 }
 
-.red-button {
-  background-color: red;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  font-size: 16px;
-    border: none;
-    cursor: pointer;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.red-button:hover {
-  background-color: darkred;
-}
 
 .datagroups-table {
   margin-bottom: 10px; /* Add 10 pixels of padding below the table */
 }
 
-.green-button {
-  background-color: green;
-  color: white;
-}
-.green-button:hover {
-  background-color: darkgreen;
-  color: white;
-}
-.button.yellow-button {
-      background-color: yellow;
-      color: black;
-  }    
-
+/* Vertical Centering */
 .vertical-center {
     margin: 0;
     position: absolute;
     top: 50%;
-    -ms-transform: translateY(-50%);
     transform: translateY(-50%);
 }
 
+/* Dropdown Styles */
 .dropdown {
     display: inline-block;
     position: relative;
@@ -246,5 +260,31 @@ table, th, td {
 }
 
 .dropdown:hover .button {
-    background-color: #black;
+    background-color: #0056b3;
+}
+
+/* Record Input Styles */
+/* Add this to your existing CSS file */
+.record {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px; /* Adjust the gap as needed */
+}
+
+.record input {
+  flex: 1; /* This ensures the input fields take up available space */
+}
+
+.record button {
+  background: red;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.record button:hover {
+  background: darkred;
 }
