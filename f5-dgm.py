@@ -9,6 +9,7 @@ import ipaddress
 import socket
 import base64
 import logging
+from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS
 from flask_talisman import Talisman
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from requests.auth import HTTPBasicAuth
@@ -28,6 +29,9 @@ from helper_functions import (
     is_device_reachable, 
     verify_device_credentials
 )
+
+# Configure logging
+logging.basicConfig(level=logging.ERROR)
 
 # Disable SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -75,189 +79,24 @@ try:
         app.secret_key = f.read().strip()
         if not app.secret_key:
             raise ValueError("Secret key file is empty. Execute the create_secret_key.py file to create one in the project root directory.")
-except FileNotFoundError:
-    print("Error: 'secret.key' file not found. Please ensure the file exists.")
-    exit(1)
-except PermissionError:
-    print("Error: Permission denied when trying to read 'secret.key'.")
+except (FileNotFoundError, PermissionError) as e:
+    logging.error(f"Error: {e}")
     exit(1)
 except ValueError as e:
-    print(f"Error: {e}")
+    logging.error(f"Error: {e}")
     exit(1)
 except Exception as e:
-    print(f"An unexpected error occurred while reading 'secret.key': {e}")
+    logging.error(f"An unexpected error occurred while reading 'secret.key': {e}")
     exit(1)
 
 # Create the Uploads folder if necessary
-app.config['UPLOAD_FOLDER'] = 'uploads'
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
-# File paths
-DEVICES_FILE = 'devices.json'
-DATAGROUPS_FILE = 'datagroups.json'
-
-# Define built-in data groups for TMOS
-TMOS_BUILT_IN_DATA_GROUPS = [
-    {
-      "name": "aol",
-      "partition": "Common",
-      "type": "ip",
-      "records": [
-        {
-          "name": "64.12.96.0/19",
-          "data": ""
-        },
-        {
-          "name": "195.93.16.0/20",
-          "data": ""
-        },
-        {
-          "name": "195.93.48.0/22",
-          "data": ""
-        },
-        {
-          "name": "195.93.64.0/19",
-          "data": ""
-        },
-        {
-          "name": "195.93.96.0/19",
-          "data": ""
-        },
-        {
-          "name": "198.81.0.0/22",
-          "data": ""
-        },
-        {
-          "name": "198.81.8.0/23",
-          "data": ""
-        },
-        {
-          "name": "198.81.16.0/20",
-          "data": ""
-        },
-        {
-          "name": "202.67.65.128/25",
-          "data": ""
-        },
-        {
-          "name": "205.188.112.0/20",
-          "data": ""
-        },
-        {
-          "name": "205.188.146.144/30",
-          "data": ""
-        },
-        {
-          "name": "205.188.192.0/20",
-          "data": ""
-        },
-        {
-          "name": "205.188.208.0/23",
-          "data": ""
-        },
-        {
-          "name": "207.200.112.0/21",
-          "data": ""
-        }
-      ]
-    },
-    {
-      "name": "images",
-      "partition": "Common",
-      "type": "string",
-      "records": [
-        {
-          "name": ".bmp",
-          "data": ""
-        },
-        {
-          "name": ".gif",
-          "data": ""
-        },
-        {
-          "name": ".jpg",
-          "data": ""
-        }
-      ]
-    },
-    {
-      "name": "private_net",
-      "partition": "Common",
-      "type": "ip",
-      "records": [
-        {
-          "name": "10.0.0.0/8",
-          "data": ""
-        },
-        {
-          "name": "172.16.0.0/12",
-          "data": ""
-        },
-        {
-          "name": "192.168.0.0/16",
-          "data": ""
-        }
-      ]
-    },
-    {
-      "name": "sys_APM_MS_Office_OFBA_DG",
-      "partition": "Common",
-      "description": "This internal data-group is used in _sys_APM_MS_Office_OFBA_Support irule",
-      "type": "string",
-      "records": [
-        {
-          "name": "ie_sp_session_sharing_enabled",
-          "data": "0"
-        },
-        {
-          "name": "ie_sp_session_sharing_inactivity_timeout",
-          "data": "60"
-        },
-        {
-          "name": "ofba_auth_dialog_size",
-          "data": "800x600"
-        },
-        {
-          "name": "useragent1",
-          "data": "microsoft data access internet publishing provider"
-        },
-        {
-          "name": "useragent2",
-          "data": "office protocol discovery"
-        },
-        {
-          "name": "useragent3",
-          "data": "microsoft office"
-        },
-        {
-          "name": "useragent4",
-          "data": "non-browser"
-        },
-        {
-          "name": "useragent5",
-          "data": "msoffice 12"
-        },
-        {
-          "name": "useragent6",
-          "data": "microsoft-webdav-miniredir"
-        },
-        {
-          "name": "useragent7",
-          "data": "webdav-miniredir"
-        },
-        {
-          "name": "useragent9",
-          "data": "ms frontpage 1[23456789]"
-        },
-        {
-          "name": "useragent10",
-          "data": "onenote"
-        }
-      ]
-    }
-  ]
-
+app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
+try:
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
+except OSError as e:
+    logging.error(f"Failed to create upload folder: {e}")
+    exit(1)
 
 # Ensure the JSON files exist
 for filename in [DEVICES_FILE, DATAGROUPS_FILE]:
@@ -269,39 +108,71 @@ for filename in [DEVICES_FILE, DATAGROUPS_FILE]:
 # App route for the root page which displays all datagroups
 @app.route('/')
 def index():
-    devices = read_json(DEVICES_FILE)
-    datagroups = read_json(DATAGROUPS_FILE)
+    try:
+        devices = read_json(DEVICES_FILE)
+    except Exception as e:
+        logging.error(f"Error reading {DEVICES_FILE}: {e}")
+        devices = []
+
+    try:
+        datagroups = read_json(DATAGROUPS_FILE)
+    except Exception as e:
+        logging.error(f"Error reading {DATAGROUPS_FILE}: {e}")
+        datagroups = []
+
     return render_template('index.html', devices=devices, datagroups=datagroups)
 
 # App route for creating a new data group
 @app.route('/add_datagroup', methods=['GET', 'POST'])
 def add_datagroup():
     if request.method == 'POST':
-        dg_name = request.form['name']
-        description = request.form['description']
-        type_ = request.form['type']
+        dg_name = request.form.get('name')
+        description = request.form.get('description')
+        dg_type = request.form.get('type')
+
+        if not dg_name or not dg_type:
+            flash('All fields are required!')
+            return redirect(url_for('add_datagroup'))
+
         records = []
         names = request.form.getlist('records_name')
         datas = request.form.getlist('records_data')
-        for record_name, record_data in zip(names, datas):
-            records.append({'name': record_name, 'data': record_data})
+        records = [{'name': name, 'data': data} for name, data in zip(request.form.getlist('records_name'), request.form.getlist('records_data'))]
         
-        datagroups = read_json(DATAGROUPS_FILE)
-        datagroups.append({'name': dg_name, 'description': description, 'type': type_, 'description': description, 'records': records})
-        write_json(DATAGROUPS_FILE, datagroups)
-        flash('Data group added successfully!')
+        try:
+            datagroups = read_json(DATAGROUPS_FILE)
+            datagroups.append({'name': dg_name, 'description': description, 'type': dg_type, 'records': records})
+            write_json(DATAGROUPS_FILE, datagroups)
+            flash('Data group added successfully!')
+        except Exception as e:
+            flash(f'An error occurred: {e}')
+
         return redirect(url_for('index'))
 
-    return render_template('add_datagroup.html', timestamp = str(f'{datetime.now(timezone.utc).strftime('%m-%d-%Y at %H:%M:%S')} UTC'))
+    return render_template('add_datagroup.html', timestamp = f'{datetime.now(timezone.utc).strftime('%m-%d-%Y at %H:%M:%S')} UTC')
 
 # App route for deleting a local copy of a datagroup
 @app.route('/remove_datagroup', methods=['POST'])
 def remove_datagroup():
-    datagroup_name = request.form['datagroup_name']
-    datagroups = read_json(DATAGROUPS_FILE)
-    datagroups = [dg for dg in datagroups if dg['name'] != datagroup_name]
-    write_json(DATAGROUPS_FILE, datagroups)
-    flash('Data group removed successfully!')
+    try:
+        datagroup_name = request.form.get('datagroup_name')
+        datagroups = read_json(DATAGROUPS_FILE)
+
+        # Check if the datagroup exists before attempting to remove it
+        if not any(dg['name'] == datagroup_name for dg in datagroups):
+            flash('Data group not found!')
+            return redirect(url_for('index'))
+
+        datagroups = [dg for dg in datagroups if dg['name'] != datagroup_name]
+        write_json(DATAGROUPS_FILE, datagroups)
+        flash('Data group removed successfully!')
+    except KeyError:
+        flash('Invalid form data!')
+    except FileNotFoundError:
+        flash('Data groups file not found!')
+    except Exception as e:
+        flash(f'An error occurred: {e}')
+    
     return redirect(url_for('index'))
 
 # App route for flushing all local datagroups
@@ -311,7 +182,7 @@ def flush_datagroups():
         write_json(DATAGROUPS_FILE, [])
         flash('Local data-group cache flushed successfully!')
     except Exception as e:
-        flash(f'Error flushing data-group cache: {str(e)}')
+        flash(f'Unexpected error: {str(e)}')
     return redirect(url_for('index'))
 
 # App route for exporting datagroup to CSV
