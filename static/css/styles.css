@@ -150,6 +150,20 @@ ul.messages {
   background-color: #0056b3;
 }
 
+.small-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 7px 7px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 12px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
 .red-button {
   background-color: red;
   color: white;
@@ -215,9 +229,25 @@ table, th, td {
     padding: 10px; /* Optional: Add padding for better spacing */
 }
 
+.datagroups-table th, .datagroups-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+
+.datagroups-table th {
+  background-color: #f2f2f2;
+}
+
+.datagroups-div {
+  padding: 10px 0px;
+}
 
 .datagroups-table {
   margin-bottom: 10px; /* Add 10 pixels of padding below the table */
+  width: 100%;
+  border-collapse: collapse;
 }
 
 /* Vertical Centering */

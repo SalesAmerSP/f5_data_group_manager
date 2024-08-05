@@ -36,7 +36,8 @@ from helper_functions import (
     lint_values_json,
     fetch_and_filter_datagroup_from_device,
     delete_datagroup_from_device,
-    deploy_datagroup_to_device  
+    deploy_datagroup_to_device,
+    import_datagroup_from_device
 )
 
 # Configure logging
@@ -637,11 +638,11 @@ def export_all_datagroups_csv(device_name):
 
     csv_string = StringIO()
     writer = csv.writer(csv_string)
-    writer.writerow(['Data Group', 'Partition', 'Type', 'Name', 'Data'])
+    writer.writerow(['Data Group', 'Partition', 'Type', 'Description', 'Name', 'Data'])
 
     for datagroup in datagroups:
         for record in datagroup['records']:
-            writer.writerow([datagroup['name'], datagroup['partition'], datagroup['type'], record['name'], record['data']])
+            writer.writerow([datagroup['name'], datagroup['partition'], datagroup['type'], datagroup['description'], record['name'], record['data']])
 
     csv_bytes = BytesIO(csv_string.getvalue().encode('utf-8'))
     csv_bytes.seek(0)
@@ -673,10 +674,16 @@ def export_datagroup_from_bigip_csv():
     # Create a string-based buffer and write CSV data to it
     csv_string = StringIO()
     writer = csv.writer(csv_string)
-    writer.writerow(['Data Group', 'Type', 'Name', 'Data'])
+    writer.writerow(['Data Group', 'Type', 'Description', 'Name', 'Data'])
 
     for record in datagroup.get('records', []):
-        writer.writerow([datagroup['name'], datagroup['type'], record['name'], record.get('data', '')])
+        writer.writerow([
+            datagroup.get('name', ''), 
+            datagroup.get('type', ''), 
+            datagroup.get('description', ''), 
+            record.get('name', ''), 
+            record.get('data', '')
+        ])
 
     # Convert the string buffer to a bytes buffer
     csv_bytes = BytesIO(csv_string.getvalue().encode('utf-8'))
