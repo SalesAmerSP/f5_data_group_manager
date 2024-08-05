@@ -3,10 +3,15 @@
 {% block content %}
 <h2>Add Data Group</h2>
 <form method="post" action="{{ url_for('add_datagroup') }}" onsubmit="return validateForm()">
+    <!-- Data Group Name Input -->
     <label for="name">Data Group Name:</label>
     <input type="text" id="name" name="name" required>
+
+    <!-- Data Group Description Input -->
     <label for="name">Data Group Description:</label>
     <input type="text" id="description" name="description" value="Created by F5 DGM on {{ timestamp }}" style="color: lightgray; font-style: italic;">
+
+    <!-- Data Group Type Selection -->
     <label for="type">Data Group Type:</label>
     <select id="type" name="type" required onchange="handleTypeChange()">
         <option value="" disabled selected>Select a Type</option>
@@ -14,6 +19,8 @@
         <option value="integer">integer</option>
         <option value="ip">ip</option>
     </select>
+
+    <!-- Records Section -->
     <label for="records">Records:</label>
     <div id="records">
         <div class="record">
@@ -22,13 +29,17 @@
             <button type="button" class="red-button" onclick="removeRecord(this)">Delete</button>
         </div>
     </div>
+
+    <!-- Add Record Button -->    
     <button type="button" class="button" onclick="addRecord()">Add Record</button>
     <br><br>
+
+    <!-- Submit Button -->
     <button type="submit" class="button">Add Data Group</button>
 </form>
 
 <script>
-
+// Event listener for DOMContentLoaded to handle description input focus
 document.addEventListener("DOMContentLoaded", function() {
     const descriptionInput = document.getElementById('description');
     const defaultValue = descriptionInput.value;
@@ -43,6 +54,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 
+// Function to add a new record input set
 function addRecord() {
     const recordDiv = document.createElement('div');
     recordDiv.className = 'record';
@@ -54,22 +66,21 @@ function addRecord() {
     document.getElementById('records').appendChild(recordDiv);
 }
 
+// Function to remove a record input set
 function removeRecord(button) {
     button.parentElement.remove();
 }
 
+// Function to handle changes in the data group type selection
 function handleTypeChange() {
     const type = document.getElementById('type').value;
     const records = document.querySelectorAll('input[name="records_name"]');
     records.forEach(record => {
-        if (type === 'integer') {
-            record.type = 'number';
-        } else {
-            record.type = 'text';
-        }
+        record.type = type === 'integer' ? 'number' : 'text';
     });
 }
 
+// Function to validate the form before submission
 function validateForm() {
     const datagroupType = document.getElementById('type').value;
     const names = document.querySelectorAll('input[name="records_name"]');
@@ -100,12 +111,14 @@ function validateForm() {
     return true;
 }
 
+// Function to validate if a string is a valid IP address
 function isValidIPAddress(ip) {
     const ipv4Pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     const ipv6Pattern = /^(([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:))|(([0-9a-fA-F]{1,4}:){1,7}:)|(([0-9a-fA-F]{1,4}:){1,6}(:[0-9a-fA-F]{1,4}){1,1})|(([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2})|(([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3})|(([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4})|(([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5})|(([0-9a-fA-F]{1,4}:){1,1}(:[0-9a-fA-F]{1,4}){1,6})|(::([0-9a-fA-F]{1,4}:){1,7}|:)|(([0-9a-fA-F]{1,4}:){1,7}:)$/;
     return ipv4Pattern.test(ip) || ipv6Pattern.test(ip);
 }
 
+// Function to validate if a string is a valid CIDR notation
 function isValidCIDR(cidr) {
     const [ip, prefix] = cidr.split('/');
     if (!prefix || isNaN(prefix)) return false;

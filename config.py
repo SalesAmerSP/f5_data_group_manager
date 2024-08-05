@@ -1,5 +1,8 @@
 # config.py
 
+# config.py
+SECRET_KEY_FILE = 'secret.key'
+
 # File paths
 DEVICES_FILE = 'devices.json'
 DATAGROUPS_FILE = 'datagroups.json'
