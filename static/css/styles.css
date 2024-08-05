@@ -1,3 +1,4 @@
+/* General Styles */
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
@@ -7,17 +8,18 @@ body {
 }
 
 .container {
-  width: 80%;
+  width: 95%;
   margin: 20px auto;
-  background: #fff;
+  background: white;
   padding: 20px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 h1, h2 {
   color: #333;
 }
 
+/* Navigation Styles */
 nav ul {
   list-style: none;
   padding: 0;
@@ -39,6 +41,7 @@ nav ul li a:hover {
   box-shadow: 0 0 5px red;
 }
 
+/* Form Styles */
 form {
   margin: 20px 0;
 }
@@ -70,6 +73,7 @@ form button:hover {
   background: #0056b3;
 }
 
+/* Flash Messages */
 ul.messages {
   list-style: none;
   padding: 0;
@@ -77,21 +81,21 @@ ul.messages {
   color: green;
 }
 
+/* Logo Styles */
 .logo {
   display: flex;
   align-items: center;
+  padding: 10px;
 }
 
 .logo img {
-  width: 150px;  /* Adjust the size as needed */
-  margin-right: 10px;
+  height: auto;
+  width: auto;
+  max-height: 50px;
+  margin-right: 15px;
 }
 
-nav ul li a:hover {
-  color: red;
-  box-shadow: 0 0 5px red;
-}
-
+/* Record Styles */
 .record {
   display: flex;
   align-items: center;
@@ -115,6 +119,7 @@ nav ul li a:hover {
   background: darkred;
 }
 
+/* Checkbox Styles */
 .device-checkbox, .datagroup-checkbox {
   display: flex;
   align-items: center;
@@ -125,13 +130,18 @@ nav ul li a:hover {
   margin-right: 10px;
 }
 
+/* Button Styles */
 .button {
-  display: inline-block;
   padding: 10px 20px;
-  margin-right: 10px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 10px 0px 10px 0px;
   background-color: #007BFF;
   color: white;
-  text-decoration: none;
   border-radius: 4px;
   transition: background-color 0.3s;
 }
@@ -140,36 +150,59 @@ nav ul li a:hover {
   background-color: #0056b3;
 }
 
-/* Dropdown Menu */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
+.small-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 7px 7px;
+  text-align: center;
   text-decoration: none;
-  display: block;
+  display: inline-block;
+  font-size: 12px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
 }
 
-.dropdown-content a:hover {
-  background-color: #f1f1f1;
+.red-button {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
 }
 
-.dropdown:hover .dropdown-content {
-  display: block;
+.red-button:hover {
+  background-color: darkred;
 }
 
+.green-button {
+  background-color: green;
+  color: white;
+}
+
+.green-button:hover {
+  background-color: darkgreen;
+  color: white;
+}
+
+.button.yellow-button {
+      background-color: yellow;
+      color: black;
+}    
+
+.button.yellow-button:hover {
+  background-color: orange;
+  color: black;
+}    
+
+/* Table Styles */
 table, th, td {
   border: 1px solid black;
 }
@@ -196,18 +229,92 @@ table, th, td {
     padding: 10px; /* Optional: Add padding for better spacing */
 }
 
-.red-button {
-  background-color: red;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
+.datagroups-table th, .datagroups-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
 }
 
-.red-button:hover {
-  background-color: darkred;
+
+.datagroups-table th {
+  background-color: #f2f2f2;
+}
+
+.datagroups-div {
+  padding: 10px 0px;
 }
 
 .datagroups-table {
   margin-bottom: 10px; /* Add 10 pixels of padding below the table */
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Vertical Centering */
+.vertical-center {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Dropdown Styles */
+.dropdown {
+    display: inline-block;
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #cee9fb;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: darkblue;
+    color: white;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .button {
+    background-color: #0056b3;
+}
+
+/* Record Input Styles */
+/* Add this to your existing CSS file */
+.record {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px; /* Adjust the gap as needed */
+}
+
+.record input {
+  flex: 1; /* This ensures the input fields take up available space */
+}
+
+.record button {
+  background: red;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.record button:hover {
+  background: darkred;
 }

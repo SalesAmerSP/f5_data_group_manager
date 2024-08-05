@@ -1,4 +1,7 @@
-# local configuration files
+# VS Code
+.vscode/
+
+# default configuration files
 datagroups.json
 devices.json
 
@@ -6,8 +9,9 @@ devices.json
 uploads/
 uploads/**
 
-# local secret key file
+# default secret key file
 secret.key
+*.key
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -193,7 +197,6 @@ pip-selfcheck.json
 # Icon must end with two \r
 Icon
 
-
 # Thumbnails
 ._*
 
@@ -212,3 +215,8 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Windows OS
+Thumbs.db
+ehthumbs.db
+

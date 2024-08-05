@@ -6,22 +6,13 @@
     <title>F5 Data Groups Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
+        /* Container for the entire page */
         .container {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
-        .logo {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-        }
-        .logo img {
-            height: auto;
-            width: auto;
-            max-height: 50px;
-            margin-right: 15px;
-        }
+        /* Navigation bar styling */
         nav {
             background-color: #f8f8f8;
             border-bottom: 1px solid #ccc;
@@ -52,16 +43,19 @@
             background-color: #d0d0d0;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
         }
+        /* Main content area styling */
         .content {
             flex: 1;
             padding: 20px;
         }
+        /* Footer styling */
         footer {
             text-align: center;
             padding: 10px 0;
             background-color: #f1f1f1;
             margin-top: 20px;
         }
+        /* Flash messages styling */
         .messages {
             list-style-type: none;
             padding: 0;
@@ -72,16 +66,19 @@
 </head>
 <body>
     <div class="container">
+        <!-- Logo section -->
         <div class="logo">
             <img src="{{ url_for('static', filename='images/f5_logo.png') }}" alt="F5 Logo">
             <h1>F5 Data Groups Management</h1>
         </div>
+        <!-- Navigation bar -->
         <nav>
             <ul>
                 <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Data Groups</a></li>
                 <li><a href="{{ url_for('big_ips') }}" class="{% if request.endpoint == 'big_ips' %}active{% endif %}">BIG-IPs</a></li>
             </ul>
         </nav>
+        <!-- Main content area -->
         <div class="content">
             {% with messages = get_flashed_messages() %}
               {% if messages %}
@@ -94,6 +91,7 @@
             {% endwith %}
             {% block content %}{% endblock %}
         </div>
+        <!-- Footer section -->
         <footer>
             <p>&copy; 2024 F5, Inc.</p>
         </footer>

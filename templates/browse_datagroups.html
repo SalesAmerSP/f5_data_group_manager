@@ -1,0 +1,52 @@
+<!-- browse_datagroups.html -->
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Data Groups on {{ device.name }} ({{ device.address }})</h2>
+    <div style="text-align: right;">
+        <a href="{{ url_for('export_all_datagroups_json', device_name=device.name) }}" class="button">Export All Data Groups to JSON</a>
+        <a href="{{ url_for('export_all_datagroups_csv', device_name=device.name) }}" class="button">Export All Data Groups to CSV</a>
+    </div>
+    {% for datagroup in datagroups %}
+    <div>
+        <h3>/{{ datagroup.partition }}/{{ datagroup.name }}</h3>
+        {{ datagroup.records|length }} records - Description: {{ datagroup.description }}
+            <div class="datagroups-div">
+            <a href="{{ url_for('export_datagroup_from_bigip_csv', device_name=device.name, datagroup_name=datagroup.name) }}" class="small-button">Export to CSV</a>
+            <a href="{{ url_for('export_datagroup_from_bigip_json', device_name=device.name, datagroup_name=datagroup.name) }}" class="small-button">Export to JSON</a>
+            <button class="small-button" onclick="toggleRecords(this)">Show Records</button>
+            <table class="datagroups-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in datagroup.records %}
+                    <tr>
+                        <td>{{ record.name }}</td>
+                        <td>{{ record.data }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+
+<script>
+    function toggleRecords(button) {
+        const table = button.nextElementSibling;
+        if (table.style.display === "none") {
+            table.style.display = "table";
+            button.textContent = "Hide Records";
+        } else {
+            table.style.display = "none";
+            button.textContent = "Show Records";
+        }
+    }
+</script>
+    
+{% endblock %}
+
