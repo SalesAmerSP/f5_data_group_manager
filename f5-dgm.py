@@ -188,32 +188,35 @@ def flush_datagroups():
 # App route for exporting datagroup to CSV
 @app.route('/export_datagroup_csv', methods=['POST'])
 def export_datagroup_csv():
-    datagroups = read_json(DATAGROUPS_FILE)
-    datagroup_name = request.form['datagroup_name']
-    datagroup = next((dg for dg in datagroups if dg['name'] == datagroup_name), None)
+    try:
+        datagroups = read_json(DATAGROUPS_FILE)
+        datagroup_name = request.form.get('datagroup_name')
+        datagroup = next((dg for dg in datagroups if dg['name'] == datagroup_name), None)
 
-    if not datagroup:
-        flash(f'Data group {datagroup_name} not found')
-        return redirect(url_for('index'))
+        if not datagroup:
+            flash(f'Data group {datagroup_name} not found')
+            return redirect(url_for('index'))
 
-    # Create a string-based buffer and write CSV data to it
-    csv_string = StringIO()
-    writer = csv.writer(csv_string)
-    writer.writerow(['Data Group', 'Type', 'Name', 'Data'])
+        # Create a string-based buffer and write CSV data to it
+        csv_string = StringIO()
+        writer = csv.writer(csv_string)
+        writer.writerow(['Data Group', 'Type', 'Description', 'Name', 'Data'])
 
-    for record in datagroup['records']:
-        writer.writerow([datagroup['name'], datagroup['type'], record['name'], record.get('data', '')])
+        for record in datagroup['records']:
+            writer.writerow([datagroup['name'], datagroup['type'], datagroup['description'], record['name'], record.get('data', '')])
 
-    # Convert the string buffer to a bytes buffer
-    csv_bytes = BytesIO(csv_string.getvalue().encode('utf-8'))
-    csv_bytes.seek(0)
+        # Convert the string buffer to a bytes buffer
+        csv_bytes = BytesIO(csv_string.getvalue().encode('utf-8'))
+        csv_bytes.seek(0)
 
-    return send_file(
-        csv_bytes,
-        mimetype='text/csv',
-        as_attachment=True,
-        download_name=f'datagroup-{datagroup['name']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv'
-    )
+        return send_file(
+            csv_bytes,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f'datagroup-{datagroup['name']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv'
+        )
+    except Exception as e:
+        flash(f'Unexpected error: {str(e)}')
 
 # App Route for exporting to JSON
 @app.route('/export_datagroup_json', methods=['POST'])
@@ -234,7 +237,7 @@ def export_datagroup_json():
         json_bytes,
         mimetype='application/json',
         as_attachment=True,
-        download_name=f'datagroup-{datagroup_name}-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}UTC.json'
+        download_name=f'datagroup-{datagroup_name}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H:%M:%S')}UTC.json'
     )
 
 # App route for importing a datagroup from file
@@ -242,7 +245,7 @@ def export_datagroup_json():
 def import_from_file():
     if request.method == 'POST':
         if 'file' not in request.files:
-            flash('No file part')
+            flash('No file specified')
             return redirect(request.url)
         file = request.files['file']
         if file.filename == '':
@@ -271,11 +274,11 @@ def import_from_file():
 
                         current_datagroup = None
                         for row in reader:
-                            dg_name, dg_type, record_name, record_data = row
+                            dg_name, dg_type, dg_description, record_name, record_data = row
                             if not current_datagroup or current_datagroup['name'] != dg_name:
                                 if current_datagroup:
                                     new_datagroups.append(current_datagroup)
-                                current_datagroup = {'name': dg_name, 'type': dg_type, 'records': []}
+                                current_datagroup = {'name': dg_name, 'type': dg_type, 'description': dg_description, 'records': []}
                             current_datagroup['records'].append({'name': record_name, 'data': record_data})
 
                         if current_datagroup:
@@ -352,26 +355,26 @@ def lint_datagroup_csv(file_path):
         with open(file_path, newline='') as csvfile:
             reader = csv.reader(csvfile)
             header = next(reader)
-            if header != ["Data Group", "Type", "Name", "Data"]:
-                return False, 'CSV header must be "Data Group", "Type", "Name", "Data"'
+            if header != ["Data Group", "Type", "Description", "Name", "Data"]:
+                return False, 'CSV header must be "Data Group", "Type", "Description", "Name", "Data"'
             for row in reader:
-                if len(row) != 4:
-                    return False, 'Each row must have exactly four values: Data Group, Type, Name, Data'
+                if len(row) != 5:
+                    return False, 'Each row must have exactly four values: Data Group, Type, Description, Name, Data'
                 if row[1] not in ["string", "integer", "ip"]:
                     return False, 'Data Group type must be "string", "integer", or "ip"'
                 if row[1] == "integer":
                     try:
-                        int(row[2])
+                        int(row[3])
                     except ValueError:
                         return False, 'For Data Group type "integer", all Name values must be integers'
                 if row[1] == "address":
                     try:
-                        if '/' in row[2]:
-                            ip_network(row[2], strict=True)
+                        if '/' in row[3]:
+                            ip_network(row[3], strict=True)
                         else:
-                            ip_address(row[2])
+                            ip_address(row[3])
                     except ValueError:
-                        return False, 'For Data Group type "ip", all Name values must be valid IPv4 or IPv6 addresses or subnets in CIDR notation'
+                        return False, 'For Data Group type "ip", all Name values must be valid IPv4/IPv6 addresses or valid IPv4/IPv6 subnets in CIDR notation'
             return True, "CSV format is correct"
     except Exception as e:
         return False, str(e)
