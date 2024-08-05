@@ -1,13 +1,18 @@
-# config.py
+#!/usr/bin/env python3
 
 # config.py
+
+# Path to the file containing the secret key for session management and other security-related needs
 SECRET_KEY_FILE = 'secret.key'
 
-# File paths
+# File paths for storing device and data group information
 DEVICES_FILE = 'devices.json'
 DATAGROUPS_FILE = 'datagroups.json'
 
-# Define built-in data groups for TMOS
+# Define built-in data groups for TMOS (Traffic Management Operating System)
+# These data groups are predefined and can be used for various purposes within the application
+
+# Data group for AOL IP addresses
 TMOS_BUILT_IN_DATA_GROUPS = [
     {
         "name": "aol",
@@ -30,6 +35,7 @@ TMOS_BUILT_IN_DATA_GROUPS = [
             {"name": "207.200.112.0/21", "data": ""}
         ]
     },
+    # Data group for image file extensions
     {
         "name": "images",
         "partition": "Common",
@@ -40,6 +46,7 @@ TMOS_BUILT_IN_DATA_GROUPS = [
             {"name": ".jpg", "data": ""}
         ]
     },
+    # Data group for private network IP ranges
     {
         "name": "private_net",
         "partition": "Common",
@@ -50,6 +57,7 @@ TMOS_BUILT_IN_DATA_GROUPS = [
             {"name": "192.168.0.0/16", "data": ""}
         ]
     },
+    # Data group for Microsoft Office OFBA (Outlook Forms Based Authentication) support
     {
         "name": "sys_APM_MS_Office_OFBA_DG",
         "partition": "Common",
