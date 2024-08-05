@@ -221,24 +221,27 @@ def export_datagroup_csv():
 # App Route for exporting to JSON
 @app.route('/export_datagroup_json', methods=['POST'])
 def export_datagroup_json():
-    datagroups = read_json(DATAGROUPS_FILE)
-    datagroup_name = request.form['datagroup_name']
-    datagroup = next((dg for dg in datagroups if dg['name'] == datagroup_name), None)
+    try:
+        datagroups = read_json(DATAGROUPS_FILE)
+        datagroup_name = request.form.get('datagroup_name')
+        datagroup = next((dg for dg in datagroups if dg['name'] == datagroup_name), None)
 
-    if not datagroup:
-        flash(f'Data group {datagroup_name} not found')
-        return redirect(url_for('index'))
+        if not datagroup:
+            flash(f'Data group {datagroup_name} not found')
+            return redirect(url_for('index'))
 
-    # Convert the datagroup to JSON bytes
-    json_bytes = BytesIO(json.dumps(datagroup).encode('utf-8'))
-    json_bytes.seek(0)
+        # Convert the datagroup to JSON bytes
+        json_bytes = BytesIO(json.dumps(datagroup).encode('utf-8'))
+        json_bytes.seek(0)
 
-    return send_file(
-        json_bytes,
-        mimetype='application/json',
-        as_attachment=True,
-        download_name=f'datagroup-{datagroup_name}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H:%M:%S')}UTC.json'
-    )
+        return send_file(
+            json_bytes,
+            mimetype='application/json',
+            as_attachment=True,
+            download_name=f'datagroup-{datagroup_name}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.json'
+        )
+    except Exception as e:
+        flash(f'Unexpected error: {str(e)}')
 
 # App route for importing a datagroup from file
 @app.route('/import_from_file', methods=['GET', 'POST'])
