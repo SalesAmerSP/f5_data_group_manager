@@ -1,6 +1,7 @@
 {% extends "base.html" %} {% block content %}
 <h2>BIG-IP Devices</h2>
 
+<!-- Button to add a new BIG-IP device -->
 <a href="{{ url_for('add_device') }}" class="button" id="add-device-button">Add BIG-IP</a>
 
 <div class="table-container">
@@ -10,11 +11,14 @@
       <th>Address</th>
       <th>Actions</th>
     </tr>
+    <!-- Loop through each device in the devices list -->
     {% for device in devices %}
     <tr>
       <td>{{ device.name }}</td>
       <td>{{ device.address }}</td>
       <td>
+
+        <!-- Form to browse data groups for the device -->        
         <form
           action="{{ url_for('browse_datagroups', device_name=device.name) }}"
           method="get"
@@ -24,6 +28,7 @@
           <button type="submit" class="button">Browse Data Groups</button>
         </form>
 
+        <!-- Form to update credentials for the device -->
         <form
           action="{{ url_for('update_device_credentials') }}"
           method="get"
@@ -33,6 +38,7 @@
           <button type="submit" class="button">Update Credentials</button>
         </form>
 
+        <!-- Form to remove the device -->
         <form
           action="{{ url_for('remove_device') }}"
           method="post"
@@ -42,6 +48,17 @@
           <input type="hidden" name="device_name" value="{{ device.name }}" />
           <button type="submit" class="red-button">Remove</button>
         </form>
+
+        <!-- New form to launch TMUI in a new tab -->
+        <form
+          action="https://{{ device.address }}"
+          method="get"
+          target="_blank"
+          style="display: inline"
+        >
+          <button type="submit" class="button">Launch TMUI</button>
+        </form>
+
       </td>
     </tr>
     {% endfor %}
