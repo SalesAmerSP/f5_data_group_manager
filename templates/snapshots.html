@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Snapshots</h2>
+
+<div>
+  <button onclick="downloadSnapshots()" {% if snapshots %}class="button">{% endif %} {% if not snapshots %} class="disabled-button" disabled>{% endif %}
+    Download All Snapshots as ZIP
+  </button>
+  <button onclick="deleteAllSnapshots()" {% if snapshots %}class="red-button">{% endif %} {% if not snapshots %}class="disabled-red-button" disabled>{% endif %}
+    Delete All Snapshots
+  </button>
+</div>
+
+<div class="table-container">
+  <table id="snapshots-table" class="datagroups-table">
+    <thead>
+      <tr>
+        <th>Snapshot</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for snapshot in snapshots %}
+      <tr>
+        <td>{{ snapshot }}</td>
+        <td>
+          <button onclick="revertSnapshot('{{ snapshot }}')" class="button yellow-button">
+            Revert to this Snapshot
+          </button>
+          <button onclick="deleteSnapshot('{{ snapshot }}')" class="red-button">
+            Delete
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  async function revertSnapshot(snapshot) {
+    await fetch(`/snapshots/revert/${snapshot}`, { method: "POST" });
+    location.reload();
+  }
+
+  async function deleteSnapshot(snapshot) {
+    if (confirm("Are you sure you want to delete this snapshot? This action cannot be undone.")) {
+      await fetch(`/snapshots/delete/${snapshot}`, { method: "DELETE" });
+      location.reload();
+    }
+  }
+
+  async function deleteAllSnapshots() {
+    if (confirm("Are you sure you want to delete all snapshots? This action cannot be undone.")) {
+      await fetch("/snapshots/delete_all", { method: "DELETE" });
+      location.reload();
+    }
+  }
+
+  async function downloadSnapshots() {
+    window.location.href = "/snapshots/download";
+  }
+</script>
+
+{% endblock %}

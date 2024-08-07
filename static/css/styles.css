@@ -146,6 +146,21 @@ ul.messages {
   transition: background-color 0.3s;
 }
 
+.disabled-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 10px 0px 10px 0px;
+  background-color: #0056b3;
+  color: gray;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
 .button:hover {
   background-color: #0056b3;
 }
@@ -178,6 +193,19 @@ ul.messages {
     display: inline-block;
 }
 
+.disabled-red-button {
+  background-color: darkred;
+  color: gray;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
 .red-button:hover {
   background-color: darkred;
 }

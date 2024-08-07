@@ -9,6 +9,9 @@ SECRET_KEY_FILE = 'secret.key'
 DEVICES_FILE = 'devices.json'
 DATAGROUPS_FILE = 'datagroups.json'
 
+# Path to folder that stores snapshots
+SNAPSHOTS_DIR = 'snapshots'
+
 # Define built-in data groups for TMOS (Traffic Management Operating System)
 # These data groups are predefined and can be used for various purposes within the application
 

@@ -2,12 +2,21 @@ import socket
 import json
 import requests
 import csv
+import time
+import os
+import shutil
+from flask import flash
 from requests.auth import HTTPBasicAuth
 from encryption import decrypt_password
-from config import DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS
+from config import DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS, SNAPSHOTS_DIR
+from datetime import datetime
 
 # Constants
 ALLOWED_EXTENSIONS = {'csv', 'json'}
+
+# Set initial timestamp of last modification of DATAGROUPS_FILE to None
+global last_modified_time
+last_modified_time = None
 
 def test_dns_resolution(hostname, timeout=5):
     try:
@@ -349,3 +358,50 @@ def deploy_datagroup_to_device(device, datagroup):
     except Exception as err:
         flash(f'Error occurred: {err}')
         return False
+
+def fetch_irules_from_bigip(device):
+    try:
+        if not test_dns_resolution(device['address']):
+            flash(f'DNS resolution failed for device: {device['name']}')
+            return []
+    except Exception as e:
+        flash(f'DNS resolution error for device: {device['name']}, error: {str(e)}')
+        return []
+
+    url = f"https://{device['address']}/mgmt/tm/ltm/rule"
+    decrypted_password = decrypt_password(device['password'])
+    if not decrypted_password:
+        flash(f'Failed to decrypt the password for device: {device['name']}')
+        return []
+
+    auth = HTTPBasicAuth(device['username'], decrypted_password)
+    try:
+        response = requests.get(url, auth=auth, verify=False, timeout=5)
+        response.raise_for_status()
+        irules = response.json().get('items', [])
+        
+        return irules
+    except requests.exceptions.Timeout:
+        flash(f'Timeout exceeded while trying to reach {device['name']}')
+        return []
+    except requests.exceptions.RequestException as e:
+        flash(f'Failed to fetch iRules from device: {device['name']}, error: {str(e)}')
+        return []
+
+def create_snapshot():
+    if not os.path.exists(SNAPSHOTS_DIR):
+        os.makedirs(SNAPSHOTS_DIR)
+    utc_timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    snapshot_file = os.path.join(SNAPSHOTS_DIR, f'snapshot_{utc_timestamp}.json')
+    shutil.copy2(DATAGROUPS_FILE, snapshot_file)
+    print(f'Snapshot created: {snapshot_file}')
+
+def monitor_file():
+    global last_modified_time
+    while True:
+        if os.path.exists(DATAGROUPS_FILE):
+            modified_time = os.path.getmtime(DATAGROUPS_FILE)
+            if last_modified_time is None or modified_time != last_modified_time:
+                create_snapshot()
+                last_modified_time = modified_time
+        time.sleep(1)

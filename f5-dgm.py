@@ -8,7 +8,11 @@ import csv
 import ipaddress
 import socket
 import logging
-from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS
+import shutil
+import threading
+import time
+import zipfile
+from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS,SNAPSHOTS_DIR
 from flask_talisman import Talisman
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from requests.auth import HTTPBasicAuth
@@ -17,28 +21,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timezone
 from io import StringIO, BytesIO
 from ipaddress import ip_address, ip_network
-from helper_functions import (
-    test_dns_resolution, 
-    allowed_file, 
-    read_json, 
-    write_json, 
-    lint_csv, 
-    lint_json, 
-    is_device_reachable, 
-    verify_device_credentials,
-    merge_datagroups,
-    process_csv,
-    process_json,
-    fetch_datagroups_from_bigip,
-    lint_datagroup_csv,
-    is_builtin_datagroup,
-    lint_values_csv,
-    lint_values_json,
-    fetch_and_filter_datagroup_from_device,
-    delete_datagroup_from_device,
-    deploy_datagroup_to_device,
-    import_datagroup_from_device
-)
+from helper_functions import *
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR)
@@ -51,6 +34,11 @@ app = Flask(__name__)
 
 # Enforce HTTPS
 talisman = Talisman(app)
+
+# Start the file monitoring in a separate thread
+monitoring_thread = threading.Thread(target=monitor_file)
+monitoring_thread.daemon = True
+monitoring_thread.start()
 
 # Create app security policy
 csp = {
@@ -88,7 +76,7 @@ try:
     with open('secret.key', 'r') as f:
         app.secret_key = f.read().strip()
         if not app.secret_key:
-            raise ValueError("Secret key file is empty. Execute the create_secret_key.py file to create one in the project root directory.")
+            raise ValueError('Secret key file is empty. Execute the create_secret_key.py file to create one and update config.py to point to the new file. For security purposes, save this in a folder that only has read permission by the local user, such as ~/')
 except (FileNotFoundError, PermissionError) as e:
     logging.error(f"Error: {e}")
     exit(1)
@@ -532,8 +520,8 @@ def big_ips():
 @app.route('/add_device', methods=['GET', 'POST'])
 def add_device():
     if request.method == 'POST':
-        name = request.form['name']
-        address = request.form['address']
+        name = request.form.get('name')
+        address = request.form.get('address')
         username = request.form['username']
         password = request.form['password']
         
@@ -542,11 +530,10 @@ def add_device():
             devices.append({'name': name, 'address': address, 'username': username, 'password': encrypt_password(password)})
             write_json(DEVICES_FILE, devices)
             flash('Device added successfully!')
+            return redirect(url_for('big_ips'))    
         else:
             flash('Failed to verify the device credentials.')
         
-        return redirect(url_for('big_ips'))
-    
     return render_template('add_device.html')
 
 #App route for removing a BIG-IP device
@@ -604,7 +591,32 @@ def browse_datagroups(device_name):
         flash(f'No data groups found on device {device_name}')
         return redirect(url_for('big_ips'))
 
-    return render_template('browse_datagroups.html', device=device, datagroups=datagroups)
+    irules = fetch_irules_from_bigip(device)
+    return render_template('browse_datagroups.html', device=device, datagroups=datagroups, irules=irules)
+
+@app.route('/get_irules', methods=['POST'])
+def get_irules():
+    device_name = request.form.get('device_name')
+    datagroup_name = request.form.get('datagroup_name')
+
+    # Replace with your actual logic to get the device address and credentials
+    device_address = get_device_address(device_name)
+    username = get_device_username(device_name)
+    password = get_device_password(device_name)
+
+    # iControl REST API endpoint to get iRules
+    url = f"https://{device_address}/mgmt/tm/ltm/rule"
+
+    response = requests.get(url, auth=(username, password), verify=False)
+    irules = []
+
+    if response.status_code == 200:
+        rules = response.json().get('items', [])
+        for rule in rules:
+            if datagroup_name in rule.get('apiAnonymous', ''):
+                irules.append(rule['name'])
+
+    return jsonify({'irules': irules})
 
 @app.route('/export_all_datagroups_json/<device_name>', methods=['GET'])
 def export_all_datagroups_json(device_name):
@@ -808,6 +820,51 @@ def deploy_datagroups():
         return redirect(url_for('index'))
     
     return render_template('deploy_datagroups.html', devices=devices, datagroups=datagroups)
+
+@app.route('/snapshots', methods=['GET'])
+def snapshots():
+    snapshots = [f for f in os.listdir(SNAPSHOTS_DIR) if f.endswith('.json')]
+    return render_template('snapshots.html', snapshots=snapshots)
+
+@app.route('/snapshots/list', methods=['GET'])
+def list_snapshots():
+    snapshots = jsonify(snapshots)
+    return snapshots
+
+@app.route('/snapshots/revert/<snapshot>', methods=['POST'])
+def revert_snapshot(snapshot):
+    snapshot_path = os.path.join(SNAPSHOTS_DIR, snapshot)
+    if os.path.exists(snapshot_path):
+        shutil.copy2(snapshot_path, DATAGROUPS_FILE)
+        return jsonify({"message": "Reverted successfully"}), 200
+    return jsonify({"message": "Snapshot not found"}), 404
+
+@app.route('/snapshots/delete/<snapshot>', methods=['DELETE'])
+def delete_snapshot(snapshot):
+    snapshot_path = os.path.join(SNAPSHOTS_DIR, snapshot)
+    if os.path.exists(snapshot_path):
+        os.remove(snapshot_path)
+        return jsonify({"message": "Deleted successfully"}), 200
+    return jsonify({"message": "Snapshot not found"}), 404
+
+@app.route('/snapshots/delete_all', methods=['DELETE'])
+def delete_all_snapshots():
+    for f in os.listdir(SNAPSHOTS_DIR):
+        os.remove(os.path.join(SNAPSHOTS_DIR, f))
+    return jsonify({"message": "All snapshots deleted"}), 200
+
+@app.route('/snapshots/export', methods=['GET'])
+def export_snapshots():
+    snapshots = [os.path.join(SNAPSHOTS_DIR, f) for f in os.listdir(SNAPSHOTS_DIR) if f.endswith('.json')]
+    return jsonify({"snapshots": snapshots})
+
+@app.route('/snapshots/download', methods=['GET'])
+def download_snapshots():
+    zip_path = 'snapshots.zip'
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        for file in os.listdir(SNAPSHOTS_DIR):
+            zipf.write(os.path.join(SNAPSHOTS_DIR, file), file)
+    return send_file(zip_path, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8443, debug=True, ssl_context='adhoc')

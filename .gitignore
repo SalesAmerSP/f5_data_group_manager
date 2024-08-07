@@ -9,6 +9,10 @@ devices.json
 uploads/
 uploads/**
 
+# snapshots
+snapshots/
+snapshots/**
+
 # default secret key file
 secret.key
 *.key
