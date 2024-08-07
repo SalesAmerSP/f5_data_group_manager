@@ -1,6 +1,3 @@
-Here is a comprehensive `README.md` file for your GitHub repository:
-
-```markdown
 # F5 Data Groups Management
 
 ## Overview
