@@ -225,6 +225,13 @@ ul.messages {
       color: black;
 }    
 
+.button.disabled-yellow-button {
+  background-color: orange;
+  color: lightgray;
+  pointer-events: none;
+  cursor: default;
+}    
+
 .button.yellow-button:hover {
   background-color: orange;
   color: black;

@@ -35,10 +35,16 @@ app = Flask(__name__)
 # Enforce HTTPS
 talisman = Talisman(app)
 
+# Monitor the DATAGROUPS_FILE for changes and takes a snapshot if changes are detected
 # Start the file monitoring in a separate thread
-monitoring_thread = threading.Thread(target=monitor_file)
-monitoring_thread.daemon = True
-monitoring_thread.start()
+try:
+    # Start the file monitoring in a separate thread
+    monitoring_thread = threading.Thread(target=monitor_file)
+    monitoring_thread.daemon = True
+    monitoring_thread.start()
+    print("File monitoring thread started successfully.")
+except Exception as e:
+    print(f"Error starting file monitoring thread: {e}")
 
 # Create app security policy
 csp = {
@@ -174,7 +180,7 @@ def remove_datagroup():
     return redirect(url_for('index'))
 
 # App route for flushing all local datagroups
-@app.route('/flush_datagroups', methods=['POST'])
+@app.route('/flush_datagroups', methods=['GET'])
 def flush_datagroups():
     try:
         write_json(DATAGROUPS_FILE, [])

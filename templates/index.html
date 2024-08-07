@@ -17,25 +17,25 @@
   </div>
 </div>
 
-<div style="display: inline">
-  <form
-    action="{{ url_for('flush_datagroups') }}"
-    method="post"
-    style="display: inline"
-    onsubmit="return confirm('Are you sure you want to delete all data groups from the local cache?');"
-  >
-    <button type="submit" class="button yellow-button">
-      Flush Local Cache of Data Groups
-    </button>
-  </form>
-</div>
+<a
+  href="{{ url_for('flush_datagroups') }}"
+  {% if datagroups %}class="button yellow-button"
+  {% elif not datagroups%}class="button disabled-yellow-button"
+  {% endif %}
+  onclick="return confirm('Are you sure you want to delete all data groups from the local cache?');"
+>
+  Flush Local Cache of Data Groups
+</a>
 
 <a
   href="{{ url_for('deploy_datagroups') }}"
-  class="button yellow-button"
+  {% if datagroups %}class="button yellow-button"
+  {% elif not datagroups%}class="button disabled-yellow-button"
+  {% endif %}
   id="deploy-datagroups-button"
-  >Deploy Data Groups to BIG-IP</a
 >
+  Deploy Data Groups to BIG-IP
+</a>
 <a
   href="{{ url_for('remove_datagroup_from_bigips') }}"
   class="button red-button"
@@ -114,6 +114,5 @@
     </tbody>
   </table>
 </div>
-
 
 {% endblock %}
