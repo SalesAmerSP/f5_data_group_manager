@@ -13,16 +13,16 @@
             </tr>
         </thead>
         <tbody>
-            {% for device in devices %}
+            {% for dsc_group in dsc_groups %}
             <tr>
                 <td style="border: 1px solid #dddddd; text-align: center;">
-                    <input type="checkbox" id="device_{{ device.name }}" name="devices" value="{{ device.name }}">
+                    <input type="checkbox" id="dsc_group_{{ dsc_group.name }}" name="dsc_groups" value="{{ dsc_group.name }}">
                 </td>
                 <td style="border: 1px solid #dddddd; text-align: left;">
-                    <label for="device_{{ device.name }}">{{ device.name }}</label>
+                    <label for="dsc_group_{{ dsc_group.name }}">{{ dsc_group.name }}</label>
                 </td>
                 <td style="border: 1px solid #dddddd; text-align: left;">
-                    {{ device.address }}
+                    {{ dsc_group.address }}
                 </td>
             </tr>
             {% endfor %}

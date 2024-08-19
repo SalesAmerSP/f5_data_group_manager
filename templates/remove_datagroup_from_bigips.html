@@ -3,8 +3,8 @@
 {% block content %}
 <h2>Remove Data Groups from BIG-IPs</h2>
 <form method="post" action="{{ url_for('remove_datagroup_from_bigips') }}">
-    {% for device in devices %}
-    <h3>{{ device.name }} ({{ device.address }})</h3>
+    {% for dsc_group in dsc_groups %}
+    <h3>{{ dsc_group.name }} ({{ dsc_group.address }})</h3>
     <table class="datagroups-table">
         <thead>
             <tr>
@@ -15,9 +15,9 @@
             </tr>
         </thead>
         <tbody>
-            {% for datagroup in device.datagroups %}
+            {% for datagroup in dsc_group.datagroups %}
             <tr>
-                <td><input type="checkbox" name="selected_datagroups" value="{{ device.name }}|{{ datagroup.name }}"></td>
+                <td><input type="checkbox" name="selected_datagroups" value="{{ dsc_group.name }}|{{ datagroup.name }}"></td>
                 <td>{{ datagroup.name }}</td>
                 <td>{{ datagroup.partition }}</td>
                 <td>{{ datagroup.records_count }}</td>

@@ -1,14 +1,14 @@
 <!-- browse_datagroups.html -->
 {% extends "base.html" %} {% block content %}
-<h2>Data Groups on {{ device.name }} ({{ device.address }})</h2>
+<h2>Data Groups on {{ dsc_group.name }} ({{ dsc_group.address }})</h2>
 <div style="text-align: right">
   <a
-    href="{{ url_for('export_all_datagroups_json', device_name=device.name) }}"
+    href="{{ url_for('export_all_datagroups_json', dsc_group_name=dsc_group.name) }}"
     class="button"
     >Export All Data Groups to JSON</a
   >
   <a
-    href="{{ url_for('export_all_datagroups_csv', device_name=device.name) }}"
+    href="{{ url_for('export_all_datagroups_csv', dsc_group_name=dsc_group.name) }}"
     class="button"
     >Export All Data Groups to CSV</a
   >
@@ -20,12 +20,12 @@
   }}
   <div class="datagroups-div">
     <a
-      href="{{ url_for('export_datagroup_from_bigip_csv', device_name=device.name, datagroup_name=datagroup.name) }}"
+      href="{{ url_for('export_datagroup_from_bigip_csv', dsc_group_name=dsc_group.name, datagroup_name=datagroup.name) }}"
       class="small-button"
       >Export to CSV</a
     >
     <a
-      href="{{ url_for('export_datagroup_from_bigip_json', device_name=device.name, datagroup_name=datagroup.name) }}"
+      href="{{ url_for('export_datagroup_from_bigip_json', dsc_group_name=dsc_group.name, datagroup_name=datagroup.name) }}"
       class="small-button"
       >Export to JSON</a
     >

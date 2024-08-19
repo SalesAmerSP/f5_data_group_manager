@@ -1,62 +1,62 @@
 {% extends "base.html" %} {% block content %}
-<h2>BIG-IP Devices</h2>
+<h2>BIG-IP DSC Groups</h2>
 
-<!-- Button to add a new BIG-IP device -->
-<a href="{{ url_for('add_device') }}" class="button" id="add-device-button">Add BIG-IP</a>
+<!-- Button to add a new BIG-IP DSC Group -->
+<a href="{{ url_for('add_dsc_group') }}" class="button" id="add-dsc-group-button">Add BIG-IP Device Service Group</a>
 
 <div class="table-container">
   <table>
     <tr>
-      <th>Name</th>
-      <th>Address</th>
+      <th>Device Service Clustering Group Name</th>
+      <th>Members</th>
       <th>Actions</th>
     </tr>
-    <!-- Loop through each device in the devices list -->
-    {% for device in devices %}
+    <!-- Loop through each DSC Group in the DSC Groups list -->
+    {% for dsc_group in dsc_groups %}
     <tr>
-      <td>{{ device.name }}</td>
-      <td>{{ device.address }}</td>
+      <td>{{ dsc_group.name }}</td>
+      <td>{{ dsc_group.address }}</td>
       <td>
 
-        <!-- Form to browse data groups for the device -->        
+        <!-- Form to browse data groups for the DSC group -->        
         <form
-          action="{{ url_for('browse_datagroups', device_name=device.name) }}"
+          action="{{ url_for('browse_datagroups', dsc_group_name=dsc_group.name) }}"
           method="get"
           style="display: inline"
         >
-          <input type="hidden" name="device_name" value="{{ device.name }}" />
+          <input type="hidden" name="dsc_group_name" value="{{ dsc_group.name }}" />
           <button type="submit" class="button">Browse Data Groups</button>
         </form>
 
-        <!-- Form to update credentials for the device -->
+        <!-- Form to update credentials for the DSC Group -->
         <form
-          action="{{ url_for('update_device_credentials') }}"
+          action="{{ url_for('update_dsc_group_credentials') }}"
           method="get"
           style="display: inline"
         >
-          <input type="hidden" name="device_name" value="{{ device.name }}" />
+          <input type="hidden" name="dsc_group_name" value="{{ dsc_group.name }}" />
           <button type="submit" class="button">Update Credentials</button>
-        </form>
-
-        <!-- Form to remove the device -->
-        <form
-          action="{{ url_for('remove_device') }}"
-          method="post"
-          style="display: inline"
-          onsubmit="return confirmDeletion('{{ device.name }}');"
-        >
-          <input type="hidden" name="device_name" value="{{ device.name }}" />
-          <button type="submit" class="red-button">Remove</button>
         </form>
 
         <!-- New form to launch TMUI in a new tab -->
         <form
-          action="https://{{ device.address }}"
+          action="https://{{ dsc_group.address }}"
           method="get"
           target="_blank"
           style="display: inline"
         >
           <button type="submit" class="button">Launch TMUI</button>
+        </form>
+
+        <!-- Form to remove the DSC Group -->
+        <form
+          action="{{ url_for('remove_dsc_group') }}"
+          method="post"
+          style="display: inline"
+          onsubmit="return confirmDeletion('{{ dsc_group.name }}');"
+        >
+          <input type="hidden" name="dsc_group_name" value="{{ dsc_group.name }}" />
+          <button type="submit" class="red-button">Remove</button>
         </form>
 
       </td>
@@ -66,9 +66,9 @@
 </div>
 
 <script>
-  function confirmDeletion(deviceName) {
+  function confirmDeletion(dsc_groupName) {
     return confirm(
-      "Are you sure you want to delete the device: " + deviceName + "?"
+      "Are you sure you want to delete the DSC group: " + dsc_groupName + "?"
     );
   }
 </script>

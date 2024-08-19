@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Add DSC Group</h2>
+<form id="dsc-group-form" method="post" action="{{ url_for('add_dsc_group') }}">
+  <!-- Device Name Input -->
+  <div class="form-group">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required />
+  </div>
+
+  <!-- Device Address Input -->
+  <div class="form-group">
+    <label for="members">Members (FQDN or IPv4/IPv6 Address):</label>
+    <input type="text" id="name" name="member" required />
+    <input type="text" id=""
+    <div id="additional-members"></div>
+    <button type="button" onclick="discoverPeers()" class="button">Discover Peers</button>
+    <button type="button" onclick="addMemberInput()" class="button">Add Member</button>
+  </div>
+
+  <!-- Device Username Input -->
+  <div class="form-group">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required />
+  </div>
+
+  <!-- Device Password Input -->
+  <div class="form-group">
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required />
+  </div>
+
+  <!-- Submit Button -->
+  <div class="form-group">  
+    <button type="submit" class="button">Add DSC Group</button>
+  </div>
+</form>
+
+<div id="flash-message" style="display: none; color: green;">Discovering peers, please wait...</div>
+<div id="no-peers-message" style="display: none; color: red;">No peers were found.</div>
+
+<script>
+  function addMemberInput() {
+    const additionalMembers = document.getElementById('additional-members');
+    const memberDiv = document.createElement('div');
+    const newInput = document.createElement('input');
+    newInput.type = 'text';
+    newInput.name = 'members';
+    newInput.required = true;
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.className = 'red-button';
+    deleteButton.innerText = 'Delete';
+    deleteButton.onclick = function() {
+      memberDiv.remove();
+    };
+    memberDiv.appendChild(newInput);
+    memberDiv.appendChild(deleteButton);
+    additionalMembers.appendChild(memberDiv);
+  }
+
+  async function discoverPeers() {
+    const bigIpAddress = document.getElementById('members').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const flashMessage = document.getElementById('flash-message');
+    const noPeersMessage = document.getElementById('no-peers-message');
+    flashMessage.style.display = 'block';
+    noPeersMessage.style.display = 'none';
+
+    if (!bigIpAddress || !username || !password) {
+        alert('Please enter a valid BIG-IP address, username, and password');
+        flashMessage.style.display = 'none';
+        return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    try {
+        const response = await fetch(`https://${bigIpAddress}/mgmt/tm/cm/device-group/device_trust_group/devices`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(`${username}:${password}`)
+            },
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        if (!data.items || data.items.length === 0) {
+            noPeersMessage.style.display = 'block';
+            return;
+        }
+
+        const members = data.items.map(item => ({
+            hostname: item.name,
+            ip: item.managementIp
+        }));
+
+        updateMemberList(members);
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            alert('Request timed out');
+        } else {
+            console.error('Failed to discover peers:', error);
+            alert('Failed to discover peers: ' + error.message);
+        }
+    } finally {
+        flashMessage.style.display = 'none';
+    }
+}
+
+
+  function updateMemberList(members) {
+    const additionalMembers = document.getElementById('additional-members');
+    additionalMembers.innerHTML = ''; // Clear existing members
+
+    const fragment = document.createDocumentFragment(); // Create a document fragment
+
+    members.forEach(member => {
+      const memberDiv = createMemberElement(member);
+      fragment.appendChild(memberDiv);
+    });
+
+    additionalMembers.appendChild(fragment); // Append all elements at once
+  }
+
+  function createMemberElement(member) {
+    const memberDiv = document.createElement('div');
+    memberDiv.className = 'member-item'; // Adding class for styling
+
+    const newInput = document.createElement('input');
+    newInput.type = 'text';
+    newInput.name = 'members';
+    newInput.value = `${member.hostname} (${member.ip})`;
+    newInput.required = true;
+    newInput.ariaLabel = `Member hostname: ${member.hostname}, IP: ${member.ip}`; // Accessibility
+
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.innerText = 'Delete';
+    deleteButton.onclick = function () {
+      memberDiv.remove(); // Use remove() method directly
+    };
+
+    memberDiv.appendChild(newInput);
+    memberDiv.appendChild(deleteButton);
+
+    return memberDiv;
+  }
+
+  document.getElementById('dsc-group-form').addEventListener('submit', function(event) {
+    const memberInputs = document.querySelectorAll('input[name="members"]');
+    const members = [];
+    const ipv4Pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    const ipv6Pattern = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+    const fqdnPattern = /^(?=.{1,253}$)(?:(?!\d+\.)[a-zA-Z0-9_\-]{1,63}\.?)+(?:[a-zA-Z]{2,})$/;
+
+    for (const input of memberInputs) {
+      const value = input.value.trim();
+      if (!ipv4Pattern.test(value) && !ipv6Pattern.test(value) && !fqdnPattern.test(value)) {
+        alert(`Invalid member address: ${value}`);
+        event.preventDefault();
+        return;
+      }
+      members.push(value);
+    }
+
+    const membersDict = { members: members };
+    const membersInput = document.createElement('input');
+    membersInput.type = 'hidden';
+    membersInput.name = 'members_dict';
+    membersInput.value = JSON.stringify(membersDict);
+    this.appendChild(membersInput);
+  });
+</script>
+
+{% endblock %}

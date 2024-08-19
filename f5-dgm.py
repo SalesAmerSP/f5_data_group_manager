@@ -12,7 +12,7 @@ import shutil
 import threading
 import time
 import zipfile
-from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS,SNAPSHOTS_DIR
+from config import DSC_GROUPS_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS,SNAPSHOTS_DIR
 from flask_talisman import Talisman
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from requests.auth import HTTPBasicAuth
@@ -103,7 +103,7 @@ except OSError as e:
     exit(1)
 
 # Ensure the JSON files exist
-for filename in [DEVICES_FILE, DATAGROUPS_FILE]:
+for filename in [DSC_GROUPS_FILE, DATAGROUPS_FILE]:
     if not os.path.exists(filename):
         with open(filename, 'w') as f:
             json.dump([], f)
@@ -113,10 +113,10 @@ for filename in [DEVICES_FILE, DATAGROUPS_FILE]:
 @app.route('/')
 def index():
     try:
-        devices = read_json(DEVICES_FILE)
+        dsc_groups = read_json(DSC_GROUPS_FILE)
     except Exception as e:
-        logging.error(f"Error reading {DEVICES_FILE}: {e}")
-        devices = []
+        logging.error(f"Error reading {DSC_GROUPS_FILE}: {e}")
+        dsc_groups = []
 
     try:
         datagroups = read_json(DATAGROUPS_FILE)
@@ -124,7 +124,7 @@ def index():
         logging.error(f"Error reading {DATAGROUPS_FILE}: {e}")
         datagroups = []
 
-    return render_template('index.html', devices=devices, datagroups=datagroups)
+    return render_template('index.html', dsc_groups=dsc_groups, datagroups=datagroups)
 
 # App route for creating a new data group
 @app.route('/add_datagroup', methods=['GET', 'POST'])
@@ -301,7 +301,7 @@ def import_from_url():
             response = requests.get(url, verify=False, timeout=15)
             response.raise_for_status()
         except requests.exceptions.Timeout:
-            flash(f'Timeout exceeded while trying to reach {device["name"]}')
+            flash(f'Timeout exceeded while trying to reach {dsc_group["name"]}')
             return []
         except requests.RequestException as e:
             flash(f'Failed to download file: {e}')
@@ -365,34 +365,34 @@ def import_from_url():
 # App route for importing datagroups from BIG-IP(s)
 @app.route('/import_from_bigips', methods=['GET', 'POST'])
 def import_from_bigips():
-    devices = read_json(DEVICES_FILE)
-    device_datagroups = []
+    dsc_groups = read_json(DSC_GROUPS_FILE)
+    dsc_group_datagroups = []
 
-    for device in devices:
-        datagroups = fetch_datagroups_from_bigip(device)
+    for dsc_group in dsc_groups:
+        datagroups = fetch_datagroups_from_bigip(dsc_group)
         if datagroups:
-            device['datagroups'] = datagroups
-            device_datagroups.append(device)
+            dsc_group['datagroups'] = datagroups
+            dsc_group_datagroups.append(dsc_group)
 
     if request.method == 'POST':
         ignore_builtin = request.form.get('ignore_builtin') == 'on'
         selected_datagroups = {}
-        for device in device_datagroups:
-            datagroups = request.form.getlist(f'datagroups_{device["name"]}')
+        for dsc_group in dsc_group_datagroups:
+            datagroups = request.form.getlist(f'datagroups_{dsc_group["name"]}')
             for datagroup in datagroups:
                 if ignore_builtin and is_builtin_datagroup(datagroup):
                     continue
                 if datagroup not in selected_datagroups:
-                    selected_datagroups[datagroup] = device
+                    selected_datagroups[datagroup] = dsc_group
                 else:
-                    flash(f'Duplicate data group name "{datagroup}" found across devices. Please ensure unique data group names.')
-                    return render_template('import_from_bigips.html', devices=device_datagroups, TMOS_BUILT_IN_DATA_GROUPS=TMOS_BUILT_IN_DATA_GROUPS)
+                    flash(f'Duplicate data group name "{datagroup}" found across multiple DSCs. Please ensure unique data group names.')
+                    return render_template('import_from_bigips.html', dsc_groups=dsc_group_datagroups, TMOS_BUILT_IN_DATA_GROUPS=TMOS_BUILT_IN_DATA_GROUPS)
 
         success_count = 0
         failure_count = 0
 
-        for datagroup, device in selected_datagroups.items():
-            if import_datagroup_from_device(device, datagroup):
+        for datagroup, dsc_group in selected_datagroups.items():
+            if import_datagroup_from_dsc_group(dsc_group, datagroup):
                 success_count += 1
             else:
                 failure_count += 1
@@ -400,7 +400,7 @@ def import_from_bigips():
         flash(f'Successfully imported {success_count} data groups. Failed to import {failure_count} data groups.')
         return redirect(url_for('index'))
 
-    return render_template('import_from_bigips.html', devices=device_datagroups, TMOS_BUILT_IN_DATA_GROUPS=TMOS_BUILT_IN_DATA_GROUPS)
+    return render_template('import_from_bigips.html', dsc_groups=dsc_group_datagroups, TMOS_BUILT_IN_DATA_GROUPS=TMOS_BUILT_IN_DATA_GROUPS)
 
 
 # App route for updating an existing datagroup
@@ -506,112 +506,112 @@ def import_values(name):
         
     return redirect(url_for('update_datagroup', name=name))
 
-# App route for the BIG-IP devices page
+# App route for the BIG-IP dsc_groups page
 @app.route('/big_ips')
 def big_ips():
     try:
-        devices = read_json(DEVICES_FILE)
-        return render_template('big_ips.html', devices=devices)
+        dsc_groups = read_json(DSC_GROUPS_FILE)
+        return render_template('big_ips.html', dsc_groups=dsc_groups)
     except FileNotFoundError:
-        flash('Devices file not found', 'error')
+        flash('DSC groups file not found', 'error')
         return redirect(url_for('index'))
     except json.JSONDecodeError:
-        flash('Error decoding JSON from devices file', 'error')
+        flash('Error decoding JSON from DSC groups file', 'error')
         return redirect(url_for('index'))
     except Exception as e:
         flash(f'An unexpected error occurred: {str(e)}', 'error')
         return redirect(url_for('index'))
 
-# App route for adding a BIG-IP device
-@app.route('/add_device', methods=['GET', 'POST'])
-def add_device():
+# App route for adding a BIG-IP DSC group
+@app.route('/add_dsc_group', methods=['GET', 'POST'])
+def add_dsc_group():
     if request.method == 'POST':
         name = request.form.get('name')
         address = request.form.get('address')
         username = request.form['username']
         password = request.form['password']
         
-        if verify_device_credentials(address, username, password):
-            devices = read_json(DEVICES_FILE)
-            devices.append({'name': name, 'address': address, 'username': username, 'password': encrypt_password(password)})
-            write_json(DEVICES_FILE, devices)
-            flash('Device added successfully!')
+        if verify_dsc_group_credentials(address, username, password):
+            dsc_groups = read_json(DSC_GROUPS_FILE)
+            dsc_groups.append({'name': name, 'address': address, 'username': username, 'password': encrypt_password(password)})
+            write_json(DSC_GROUPS_FILE, dsc_groups)
+            flash('DSC group added successfully!')
             return redirect(url_for('big_ips'))    
         else:
-            flash('Failed to verify the device credentials.')
+            flash('Failed to verify the DSC group credentials.')
         
-    return render_template('add_device.html')
+    return render_template('add_dsc_group.html')
 
-#App route for removing a BIG-IP device
-@app.route('/remove_device', methods=['POST'])
-def remove_device():
-    device_name = request.form['device_name']
-    devices = read_json(DEVICES_FILE)
-    devices = [device for device in devices if device['name'] != device_name]
-    write_json(DEVICES_FILE, devices)
-    flash('Device removed successfully!')
+#App route for removing a BIG-IP DSC group
+@app.route('/remove_dsc_group', methods=['POST'])
+def remove_dsc_group():
+    dsc_group_name = request.form['dsc_group_name']
+    dsc_groups = read_json(DSC_GROUPS_FILE)
+    dsc_groups = [dsc_group for dsc_group in dsc_groups if dsc_group['name'] != dsc_group_name]
+    write_json(DSC_GROUPS_FILE, dsc_groups)
+    flash('DSC group removed successfully!')
     return redirect(url_for('big_ips'))
 
-#App route for updating device credentials
-@app.route('/update_device_credentials', methods=['GET', 'POST'])
-def update_device_credentials():
+#App route for updating DSC group credentials
+@app.route('/update_dsc_group_credentials', methods=['GET', 'POST'])
+def update_dsc_group_credentials():
     if request.method == 'POST':
-        device_name = request.form['device_name']
-        devices = read_json(DEVICES_FILE)
-        device = next((d for d in devices if d['name'] == device_name), None)
-        if device:
+        dsc_group_name = request.form['dsc_group_name']
+        dsc_groups = read_json(DSC_GROUPS_FILE)
+        dsc_group = next((d for d in dsc_groups if d['name'] == dsc_group_name), None)
+        if dsc_group:
             new_username = request.form['username']
             new_password = request.form['password']
-            if verify_device_credentials(device['address'], new_username, new_password):
-                device['username'] = new_username
-                device['password'] = encrypt_password(new_password)
-                write_json(DEVICES_FILE, devices)
-                flash('Device credentials updated successfully!')
+            if verify_dsc_group_credentials(dsc_group['address'], new_username, new_password):
+                dsc_group['username'] = new_username
+                dsc_group['password'] = encrypt_password(new_password)
+                write_json(DSC_GROUPS_FILE, dsc_groups)
+                flash('DSC group credentials updated successfully!')
             else:
                 flash('Failed to verify the new credentials.')
             return redirect(url_for('big_ips'))
         else:
-            flash('Device not found!')
+            flash('DSC group not found!')
             return redirect(url_for('big_ips'))
     else:
-        device_name = request.args.get('device_name')
-        devices = read_json(DEVICES_FILE)
-        device = next((d for d in devices if d['name'] == device_name), None)
-        if device:
-            return render_template('update_device_credentials.html', device=device)
+        dsc_group_name = request.args.get('dsc_group_name')
+        dsc_groups = read_json(DSC_GROUPS_FILE)
+        dsc_group = next((d for d in dsc_groups if d['name'] == dsc_group_name), None)
+        if dsc_group:
+            return render_template('update_dsc_group_credentials.html', dsc_group=dsc_group)
         else:
-            flash('Device not found!')
+            flash('DSC group not found!')
             return redirect(url_for('big_ips'))
 
 # App route to browsing datagroups on the BIG-IP
-@app.route('/browse_datagroups/<device_name>', methods=['GET'])
-def browse_datagroups(device_name):
-    devices = read_json(DEVICES_FILE)
-    device = next((d for d in devices if d['name'] == device_name), None)
-    if not device:
-        flash(f'Device {device_name} not found')
+@app.route('/browse_datagroups/<dsc_group_name>', methods=['GET'])
+def browse_datagroups(dsc_group_name):
+    dsc_groups = read_json(DSC_GROUPS_FILE)
+    dsc_group = next((d for d in dsc_groups if d['name'] == dsc_group_name), None)
+    if not dsc_group:
+        flash(f'DSC group {dsc_group_name} not found')
         return redirect(url_for('big_ips'))
 
-    datagroups = fetch_datagroups_from_bigip(device)
+    datagroups = fetch_datagroups_from_bigip(dsc_group)
     if not datagroups:
-        flash(f'No data groups found on device {device_name}')
+        flash(f'No data groups found on DSC group {dsc_group_name}')
         return redirect(url_for('big_ips'))
 
-    irules = fetch_irules_from_bigip(device)
-    return render_template('browse_datagroups.html', device=device, datagroups=datagroups, irules=irules)
+    irules = fetch_irules_from_bigip(dsc_group)
+    return render_template('browse_datagroups.html', dsc_group=dsc_group, datagroups=datagroups, irules=irules)
 
 @app.route('/get_irules', methods=['POST'])
 def get_irules():
-    device_name = request.form.get('device_name')
+    dsc_group_name = request.form.get('dsc_group_name')
     datagroup_name = request.form.get('datagroup_name')
 
-    # Replace with your actual logic to get the device address and credentials
-    device_address = get_device_address(device_name)
-    username = get_device_username(device_name)
-    password = get_device_password(device_name)
+    # Replace with your actual logic to get the dsc_group address and credentials
+    dsc_group_address = get_dsc_group_address(dsc_group_name)
+    username = get_dsc_group_username(dsc_group_name)
+    password = get_dsc_group_password(dsc_group_name)
 
     # iControl REST API endpoint to get iRules
-    url = f"https://{device_address}/mgmt/tm/ltm/rule"
+    url = f"https://{dsc_group_address}/mgmt/tm/ltm/rule"
 
     response = requests.get(url, auth=(username, password), verify=False)
     irules = []
@@ -624,20 +624,20 @@ def get_irules():
 
     return jsonify({'irules': irules})
 
-@app.route('/export_all_datagroups_json/<device_name>', methods=['GET'])
-def export_all_datagroups_json(device_name):
-    devices = read_json(DEVICES_FILE)
-    device = next((d for d in devices if d['name'] == device_name), None)
-    if not device:
-        flash(f'Device {device_name} not found')
+@app.route('/export_all_datagroups_json/<dsc_group_name>', methods=['GET'])
+def export_all_datagroups_json(dsc_group_name):
+    dsc_groups = read_json(DSC_GROUPS_FILE)
+    dsc_group = next((d for d in dsc_groups if d['name'] == dsc_group_name), None)
+    if not dsc_group:
+        flash(f'dsc_group {dsc_group_name} not found')
         return redirect(url_for('big_ips'))
 
-    datagroups = fetch_datagroups_from_bigip(device)
+    datagroups = fetch_datagroups_from_bigip(dsc_group)
     if not datagroups:
-        flash(f'No data groups found on device {device_name}')
+        flash(f'No data groups found on dsc_group {dsc_group_name}')
         return redirect(url_for('big_ips'))
 
-    filename = f'all-data-groups-{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.json'
+    filename = f'all-data-groups-{dsc_group['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.json'
     
     json_bytes = BytesIO(json.dumps(datagroups).encode('utf-8'))
     json_bytes.seek(0)
@@ -649,20 +649,20 @@ def export_all_datagroups_json(device_name):
         download_name=filename
     )
 
-@app.route('/export_all_datagroups_csv/<device_name>', methods=['GET'])
-def export_all_datagroups_csv(device_name):
-    devices = read_json(DEVICES_FILE)
-    device = next((d for d in devices if d['name'] == device_name), None)
-    if not device:
-        flash(f'Device {device_name} not found')
+@app.route('/export_all_datagroups_csv/<dsc_group_name>', methods=['GET'])
+def export_all_datagroups_csv(dsc_group_name):
+    dsc_groups = read_json(DSC_GROUPS_FILE)
+    dsc_group = next((d for d in dsc_groups if d['name'] == dsc_group_name), None)
+    if not dsc_group:
+        flash(f'dsc_group {dsc_group_name} not found')
         return redirect(url_for('big_ips'))
 
-    datagroups = fetch_datagroups_from_bigip(device)
+    datagroups = fetch_datagroups_from_bigip(dsc_group)
     if not datagroups:
-        flash(f'No data groups found on device {device_name}')
+        flash(f'No data groups found on dsc_group {dsc_group_name}')
         return redirect(url_for('big_ips'))
 
-    filename = f'all-data-groups-{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv'
+    filename = f'all-data-groups-{dsc_group['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv'
 
     csv_string = StringIO()
     writer = csv.writer(csv_string)
@@ -685,18 +685,18 @@ def export_all_datagroups_csv(device_name):
 # Route to export datagroup from BIG-IP to CSV
 @app.route('/export_datagroup_from_bigip_csv', methods=['GET'])
 def export_datagroup_from_bigip_csv():
-    device_name = request.args.get('device_name')
+    dsc_group_name = request.args.get('dsc_group_name')
     datagroup_name = request.args.get('datagroup_name')
 
-    devices = read_json(DEVICES_FILE)
-    device = next((d for d in devices if d['name'] == device_name), None)
-    if not device:
-        flash(f'Device {device_name} not found')
+    dsc_groups = read_json(DSC_GROUPS_FILE)
+    dsc_group = next((d for d in dsc_groups if d['name'] == dsc_group_name), None)
+    if not dsc_group:
+        flash(f'dsc_group {dsc_group_name} not found')
         return redirect(url_for('index'))
 
-    datagroup = fetch_and_filter_datagroup_from_device(device, datagroup_name)
+    datagroup = fetch_and_filter_datagroup_from_dsc_group(dsc_group, datagroup_name)
     if not datagroup:
-        flash(f'Data group {datagroup_name} not found on device {device_name}')
+        flash(f'Data group {datagroup_name} not found on dsc_group {dsc_group_name}')
         return redirect(url_for('index'))
 
     # Create a string-based buffer and write CSV data to it
@@ -717,7 +717,7 @@ def export_datagroup_from_bigip_csv():
     csv_bytes = BytesIO(csv_string.getvalue().encode('utf-8'))
     csv_bytes.seek(0)
 
-    filename = f"datagroup-{datagroup_name}_exported_from_{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv"
+    filename = f"datagroup-{datagroup_name}_exported_from_{dsc_group['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv"
     return send_file(
         csv_bytes,
         mimetype='text/csv',
@@ -728,25 +728,25 @@ def export_datagroup_from_bigip_csv():
 # Route to export datagroup from BIG-IP to JSON
 @app.route('/export_datagroup_from_bigip_json', methods=['GET'])
 def export_datagroup_from_bigip_json():
-    device_name = request.args.get('device_name')
+    dsc_group_name = request.args.get('dsc_group_name')
     datagroup_name = request.args.get('datagroup_name')
 
-    devices = read_json(DEVICES_FILE)
-    device = next((d for d in devices if d['name'] == device_name), None)
-    if not device:
-        flash(f'Device {device_name} not found')
+    dsc_groups = read_json(DSC_GROUPS_FILE)
+    dsc_group = next((d for d in dsc_groups if d['name'] == dsc_group_name), None)
+    if not dsc_group:
+        flash(f'dsc_group {dsc_group_name} not found')
         return redirect(url_for('index'))
 
-    datagroup = fetch_and_filter_datagroup_from_device(device, datagroup_name)
+    datagroup = fetch_and_filter_datagroup_from_dsc_group(dsc_group, datagroup_name)
     if not datagroup:
-        flash(f'Data group {datagroup_name} not found on device {device_name}')
+        flash(f'Data group {datagroup_name} not found on dsc_group {dsc_group_name}')
         return redirect(url_for('index'))
 
     # Convert the datagroup to JSON bytes
     json_bytes = BytesIO(json.dumps(datagroup).encode('utf-8'))
     json_bytes.seek(0)
 
-    filename = f"datagroup-{datagroup_name}_exported_from_{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.json"
+    filename = f"datagroup-{datagroup_name}_exported_from_{dsc_group['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.json"
     return send_file(
         json_bytes,
         mimetype='application/json',
@@ -759,73 +759,73 @@ def export_datagroup_from_bigip_json():
 # Route for deleting datagroups on BIG-IPs
 @app.route('/remove_datagroup_from_bigips', methods=['GET', 'POST'])
 def remove_datagroup_from_bigips():
-    devices = read_json(DEVICES_FILE)
-    device_datagroups = []
+    dsc_groups = read_json(DSC_GROUPS_FILE)
+    dsc_group_datagroups = []
 
-    # Fetch datagroups from each device
-    for device in devices:
-        datagroups = fetch_datagroups_from_bigip(device)
+    # Fetch datagroups from each dsc_group
+    for dsc_group in dsc_groups:
+        datagroups = fetch_datagroups_from_bigip(dsc_group)
         if datagroups:
             for dg in datagroups:
                 dg['partition'] = dg.get('partition', 'Common')
                 dg['records_count'] = len(dg.get('records', []))
-            device['datagroups'] = datagroups
-            device_datagroups.append(device)
+            dsc_group['datagroups'] = datagroups
+            dsc_group_datagroups.append(dsc_group)
 
     if request.method == 'POST':
         selected_datagroups = request.form.getlist('selected_datagroups')
         failed_removals = []
 
         for item in selected_datagroups:
-            device_name, datagroup_name = item.split('|')
-            device = next((d for d in devices if d['name'] == device_name), None)
-            if device:
-                success = delete_datagroup_from_device(device, datagroup_name)
+            dsc_group_name, datagroup_name = item.split('|')
+            dsc_group = next((d for d in dsc_groups if d['name'] == dsc_group_name), None)
+            if dsc_group:
+                success = delete_datagroup_from_dsc_group(dsc_group, datagroup_name)
                 if not success:
-                    failed_removals.append((device_name, datagroup_name))
+                    failed_removals.append((dsc_group_name, datagroup_name))
 
         if failed_removals:
-            flash(f'Failed to delete data groups from devices: {failed_removals}')
+            flash(f'Failed to delete data groups from DSC: {failed_removals}')
         else:
-            flash('Data groups deleted successfully from all selected devices!')
+            flash('Data groups deleted successfully from all selected DSC!')
 
         return redirect(url_for('index'))
 
-    return render_template('remove_datagroup_from_bigips.html', devices=device_datagroups)
+    return render_template('remove_datagroup_from_bigips.html', dsc_groups=dsc_group_datagroups)
 
 
 # App Route for deploying data groups to BIG-IP(s)
 @app.route('/deploy_datagroups', methods=['GET', 'POST'])
 def deploy_datagroups():
-    devices = read_json(DEVICES_FILE)
+    dsc_groups = read_json(DSC_GROUPS_FILE)
     datagroups = read_json(DATAGROUPS_FILE)
     
     if request.method == 'POST':
-        selected_devices = request.form.getlist('devices')
+        selected_dsc_groups = request.form.getlist('dsc_groups')
         selected_datagroups = request.form.getlist('datagroups')
         
-        if not selected_devices or not selected_datagroups:
-            flash('Please select at least one device and one data group to deploy.')
+        if not selected_dsc_groups or not selected_datagroups:
+            flash('Please select at least one dsc_group and one data group to deploy.')
             return redirect(url_for('deploy_datagroups'))
 
-        failed_devices = []
+        failed_dsc_groups = []
         
-        for device_name in selected_devices:
-            device = next((d for d in devices if d['name'] == device_name), None)
-            if device:
+        for dsc_group_name in selected_dsc_groups:
+            dsc_group = next((d for d in dsc_groups if d['name'] == dsc_group_name), None)
+            if dsc_group:
                 for dg_name in selected_datagroups:
                     datagroup = next((dg for dg in datagroups if dg['name'] == dg_name), None)
                     if datagroup:
-                        if not deploy_datagroup_to_device(device, datagroup):
-                            failed_devices.append(device_name)
+                        if not deploy_datagroup_to_dsc_group(dsc_group, datagroup):
+                            failed_dsc_groups.append(dsc_group_name)
                         else:
-                            flash(f"Deployed datagroup {datagroup['name']} to {device['name']} successfully!")
+                            flash(f"Deployed datagroup {datagroup['name']} to {dsc_group['name']} successfully!")
         
-        if failed_devices:
-            flash(f'Failed to deploy data groups to devices: {", ".join(failed_devices)}')
+        if failed_dsc_groups:
+            flash(f'Failed to deploy data groups to dsc_groups: {", ".join(failed_dsc_groups)}')
         return redirect(url_for('index'))
     
-    return render_template('deploy_datagroups.html', devices=devices, datagroups=datagroups)
+    return render_template('deploy_datagroups.html', dsc_groups=dsc_groups, datagroups=datagroups)
 
 @app.route('/snapshots', methods=['GET'])
 def snapshots():

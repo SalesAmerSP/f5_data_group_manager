@@ -3,7 +3,7 @@
 
 # default configuration files
 datagroups.json
-devices.json
+dsc_groups.json
 
 # uploads
 uploads/

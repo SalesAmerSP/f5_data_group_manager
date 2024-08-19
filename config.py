@@ -6,7 +6,7 @@
 SECRET_KEY_FILE = 'secret.key'
 
 # File paths for storing device and data group information
-DEVICES_FILE = 'devices.json'
+DSC_GROUPS_FILE = 'dsc_groups.json'
 DATAGROUPS_FILE = 'datagroups.json'
 
 # Path to folder that stores snapshots

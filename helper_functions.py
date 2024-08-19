@@ -72,11 +72,12 @@ def is_device_reachable(address):
     except requests.RequestException:
         return False
 
-def verify_device_credentials(address, username, password):
-    if not test_dns_resolution(address):
-        return False
+def verify_dsc_group_credentials(members, username, password):
+    for member in members:
+        if not test_dns_resolution(member.address):
+            return False
     try:
-        url = f"https://{address}/mgmt/tm/sys/clock"
+        url = f"https://{member.address}/mgmt/tm/sys/clock"
         auth = HTTPBasicAuth(username, password)
         response = requests.get(url, auth=auth, verify=False, timeout=5)
         return response.status_code == 200

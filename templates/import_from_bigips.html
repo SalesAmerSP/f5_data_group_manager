@@ -16,10 +16,10 @@
 
 <form method="post" action="{{ url_for('import_from_bigips') }}">
     <input type="hidden" name="ignore_builtin" id="ignore_builtin_hidden">
-    {% for device in devices %}
-    <div class="device-container">
-        <h3>{{ device.name }} ({{ device.address }})</h3>
-        <button type="button" onclick="selectAll('{{ device.name }}')">Select All Data Groups from {{ device.name }}</button>
+    {% for dsc-group in dsc_groups %}
+    <div class="dsc_group-container">
+        <h3>{{ dsc_group.name }} ({{ dsc_group.address }})</h3>
+        <button type="button" onclick="selectAll('{{ dsc_group.name }}')">Select All Data Groups from {{ dsc_group.name }}</button>
         <table class="datagroups-table">
             <thead>
                 <tr>
@@ -30,19 +30,19 @@
                 </tr>
             </thead>
             <tbody>
-                {% for datagroup in device.datagroups %}
+                {% for datagroup in dsc_group.datagroups %}
                 <tr class="datagroup_row" data-partition="{{ datagroup.partition }}" data-name="{{ datagroup.name }}">
                     <td>
-                        <input type="checkbox" id="datagroups_{{ device.name }}_{{ datagroup }}" name="datagroups_{{ device.name }}" value="{{ datagroup.name }}">
+                        <input type="checkbox" id="datagroups_{{ dsc_group.name }}_{{ datagroup }}" name="datagroups_{{ dsc_group.name }}" value="{{ datagroup.name }}">
                     </td>
                     <td>
-                        <label for="datagroups_{{ device.name }}_{{ datagroup }}">{{ datagroup.partition }}</label>
+                        <label for="datagroups_{{ dsc_group.name }}_{{ datagroup }}">{{ datagroup.partition }}</label>
                     </td>
                     <td>
-                        <label for="datagroups_{{ device.name }}_{{ datagroup }}">{{ datagroup.name }}</label>
+                        <label for="datagroups_{{ dsc_group.name }}_{{ datagroup }}">{{ datagroup.name }}</label>
                     </td>
                     <td>
-                        <label for="datagroups_{{ device.name }}_{{ datagroup }}">{{ datagroup.records_count }}</label>
+                        <label for="datagroups_{{ dsc_group.name }}_{{ datagroup }}">{{ datagroup.records_count }}</label>
                     </td>
                 </tr>
                 {% endfor %}
@@ -55,7 +55,7 @@
 </form>
 
 <style>
-.device-container {
+.dsc_group-container {
     margin-bottom: 20px;
 }
 
@@ -83,8 +83,8 @@
 <script>
     const TMOS_BUILT_IN_DATA_GROUPS = {{ TMOS_BUILT_IN_DATA_GROUPS|tojson|safe }};
 
-    function selectAll(deviceName) {
-        var checkboxes = document.querySelectorAll('input[name="datagroups_' + deviceName + '"]');
+    function selectAll(dsc_groupName) {
+        var checkboxes = document.querySelectorAll('input[name="datagroups_' + dsc_groupName + '"]');
         checkboxes.forEach(function(checkbox) {
             checkbox.checked = true;
         });
