@@ -8,7 +8,7 @@ import csv
 import ipaddress
 import socket
 import logging
-from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS
+from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS, HIERARCHY_FILE
 from flask_talisman import Talisman
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from requests.auth import HTTPBasicAuth
@@ -17,28 +17,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timezone
 from io import StringIO, BytesIO
 from ipaddress import ip_address, ip_network
-from helper_functions import (
-    test_dns_resolution, 
-    allowed_file, 
-    read_json, 
-    write_json, 
-    lint_csv, 
-    lint_json, 
-    is_device_reachable, 
-    verify_device_credentials,
-    merge_datagroups,
-    process_csv,
-    process_json,
-    fetch_datagroups_from_bigip,
-    lint_datagroup_csv,
-    is_builtin_datagroup,
-    lint_values_csv,
-    lint_values_json,
-    fetch_and_filter_datagroup_from_device,
-    delete_datagroup_from_device,
-    deploy_datagroup_to_device,
-    import_datagroup_from_device
-)
+from helper_functions import *
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR)
@@ -120,17 +99,13 @@ for filename in [DEVICES_FILE, DATAGROUPS_FILE]:
 def index():
     try:
         devices = read_json(DEVICES_FILE)
-    except Exception as e:
-        logging.error(f"Error reading {DEVICES_FILE}: {e}")
-        devices = []
-
-    try:
         datagroups = read_json(DATAGROUPS_FILE)
+        hierarchy = read_hierarchy()
     except Exception as e:
-        logging.error(f"Error reading {DATAGROUPS_FILE}: {e}")
-        datagroups = []
+        logging.error(f"Error: {e}")
+        devices, datagroups, hierarchy = [], [], {}
 
-    return render_template('index.html', devices=devices, datagroups=datagroups)
+    return render_template('index.html', devices=devices, datagroups=datagroups, hierarchy=hierarchy)
 
 # App route for creating a new data group
 @app.route('/add_datagroup', methods=['GET', 'POST'])
@@ -589,6 +564,78 @@ def update_device_credentials():
         else:
             flash('Device not found!')
             return redirect(url_for('big_ips'))
+
+@app.route('/set_source_of_truth', methods=['POST'])
+def set_source_of_truth():
+    selected_datagroups = request.form.getlist('datagroups')
+    
+    if not selected_datagroups:
+        flash('No data groups selected.')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST' and 'big_ip' in request.form:
+
+        big_ip = request.form.get('big_ip')
+        if not big_ip:
+            flash('Please select a BIG-IP to be the source of truth.')
+            return redirect(url_for('set_source_of_truth'))
+
+        hierarchy = read_hierarchy()
+
+        print(type(selected_datagroups))
+                
+        for dg_name in selected_datagroups:
+            # Check if the datagroup already exists in the hierarchy
+            existing_entry = next((item for item in hierarchy if item['datagroup'] == dg_name), None)
+            if existing_entry:
+                existing_entry['source_of_truth'] = big_ip
+            else:
+                # Add a new entry for the datagroup
+                hierarchy.append({
+                    "datagroup": dg_name,
+                    "source_of_truth": big_ip,
+                    "subscribers": []
+                })
+                
+        write_hierarchy(hierarchy)
+        flash('Source of Truth set successfully for selected datagroups!')
+        return redirect(url_for('index'))
+
+    # If no BIG-IP is selected yet, show the selection form
+    devices = read_json(DEVICES_FILE)
+    return render_template('set_source_of_truth.html', selected_datagroups=selected_datagroups, devices=devices)
+
+@app.route('/set_subscribers', methods=['POST'])
+def set_subscribers():
+    selected_datagroups = request.form.getlist('datagroups')
+
+    if not selected_datagroups:
+        flash('No data groups selected.')
+        return redirect(url_for('index'))
+
+    if 'subscribers' in request.form:
+        selected_subscribers = request.form.getlist('subscribers')
+        if not selected_subscribers:
+            flash('Please select at least one BIG-IP to be a subscriber.')
+            return redirect(url_for('set_subscribers'))
+
+        hierarchy = read_hierarchy()
+
+        for datagroup_name in selected_datagroups:
+            # Find the entry for the current datagroup
+            existing_entry = next((item for item in hierarchy if item['datagroup'] == datagroup_name), None)
+            if existing_entry:
+                existing_entry['subscribers'] = selected_subscribers
+            else:
+                flash(f'Data group {datagroup_name} does not have a source of truth set.')
+                return redirect(url_for('index'))
+
+        write_hierarchy(hierarchy)
+        flash('Subscribers set successfully for selected datagroups!')
+        return redirect(url_for('index'))
+
+    devices = read_json(DEVICES_FILE)
+    return render_template('set_subscribers.html', selected_datagroups=selected_datagroups, devices=devices)
 
 # App route to browsing datagroups on the BIG-IP
 @app.route('/browse_datagroups/<device_name>', methods=['GET'])

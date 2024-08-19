@@ -1,0 +1,15 @@
+{% extends "base.html" %} {% block content %}
+<h2>Set Source of Truth</h2>
+<form action="{{ url_for('set_source_of_truth') }}" method="post">
+  <label for="big_ip">Select BIG-IP to be the Source of Truth:</label>
+  <select name="big_ip" id="big_ip">
+    {% for device in devices %}
+    <option value="{{ device.name }}">{{ device.name }}</option>
+    {% endfor %}
+  </select>
+  {% for dg in selected_datagroups %}
+  <input type="hidden" name="datagroups" value="{{ dg }}" />
+  {% endfor %}
+  <button type="submit" class="button">Set Source of Truth</button>
+</form>
+{% endblock %}

@@ -1,0 +1,982 @@
+[
+    {
+        "datagroup": "sflow_172.27.185.60,sflow_172.30.0.200,sflow_172.30.0.201,sflow_172.27.185.60,sflow_172.30.0.200,sflow_172.30.0.201",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "sflow_172.27.185.60",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.95,netflow_10.131.8.96,netflow_10.131.8.97,netflow_10.131.8.98,netflow_10.131.8.99,netflow_10.131.8.100,netflow_10.131.8.101,netflow_10.131.8.166,netflow_10.131.8.167,netflow_10.131.8.168,netflow_10.131.8.169,netflow_10.146.45.210,netflow_10.146.45.211,netflow_10.146.45.212,netflow_10.146.117.82,netflow_10.146.117.83,netflow_10.146.117.84,netflow_10.146.130.222,netflow_10.146.130.223,netflow_10.146.130.224,netflow_10.146.130.225,netflow_10.146.136.20,netflow_10.146.136.21,netflow_10.146.136.22,netflow_10.146.136.23,netflow_10.146.136.24,netflow_10.146.136.25,netflow_10.146.136.29,netflow_68.87.85.69,netflow_68.87.121.30,netflow_68.87.122.203,netflow_68.87.122.204,netflow_69.241.25.8,netflow_69.241.53.155,netflow_96.96.28.15,netflow_96.96.28.16,netflow_96.102.129.58,netflow_96.102.129.59,netflow_96.104.143.91,netflow_96.104.143.92,netflow_96.106.88.194,netflow_96.106.88.195,netflow_96.107.103.243,netflow_96.107.103.244,netflow_96.112.183.205,netflow_96.112.183.206,netflow_96.113.83.4,netflow_96.113.83.5,netflow_96.115.161.68,netflow_96.115.161.73,netflow_96.115.161.74,netflow_100.92.216.95,netflow_100.92.216.96,netflow_100.93.241.17,netflow_100.93.241.18,netflow_100.93.241.29,netflow_100.93.241.31,netflow_162.150.12.109,netflow_172.27.185.20,netflow_172.27.185.60,netflow_172.28.90.33,netflow_172.28.132.136,netflow_172.28.133.233,netflow_172.28.160.154,netflow_172.28.162.20,netflow_172.28.173.40,netflow_172.30.0.196,netflow_172.30.0.197,sflow_10.60.170.4,sflow_10.60.170.5,sflow_10.60.170.6,sflow_10.60.170.7,sflow_10.146.45.211,sflow_10.146.45.212,sflow_10.146.117.82,sflow_10.146.117.83,sflow_69.241.25.8,sflow_96.112.183.206,sflow_96.113.83.5,sflow_172.24.230.9,sflow_172.24.230.43,sflow_172.26.11.119,sflow_172.27.185.60,sflow_172.30.0.200,sflow_172.30.0.201,netflow_10.131.8.95,netflow_10.131.8.96,netflow_10.131.8.97,netflow_10.131.8.98,netflow_10.131.8.99,netflow_10.131.8.100,netflow_10.131.8.101,netflow_10.131.8.166,netflow_10.131.8.167,netflow_10.131.8.168,netflow_10.131.8.169,netflow_10.146.45.210,netflow_10.146.45.211,netflow_10.146.45.212,netflow_10.146.117.82,netflow_10.146.117.83,netflow_10.146.117.84,netflow_10.146.130.222,netflow_10.146.130.223,netflow_10.146.130.224,netflow_10.146.130.225,netflow_10.146.136.20,netflow_10.146.136.21,netflow_10.146.136.22,netflow_10.146.136.23,netflow_10.146.136.24,netflow_10.146.136.25,netflow_10.146.136.29,netflow_68.87.85.69,netflow_68.87.121.30,netflow_68.87.122.203,netflow_68.87.122.204,netflow_69.241.25.8,netflow_69.241.53.155,netflow_96.96.28.15,netflow_96.96.28.16,netflow_96.102.129.58,netflow_96.102.129.59,netflow_96.104.143.91,netflow_96.104.143.92,netflow_96.106.88.194,netflow_96.106.88.195,netflow_96.107.103.243,netflow_96.107.103.244,netflow_96.112.183.205,netflow_96.112.183.206,netflow_96.113.83.4,netflow_96.113.83.5,netflow_96.115.161.68,netflow_96.115.161.73,netflow_96.115.161.74,netflow_100.92.216.95,netflow_100.92.216.96,netflow_100.93.241.17,netflow_100.93.241.18,netflow_100.93.241.29,netflow_100.93.241.31,netflow_162.150.12.109,netflow_172.27.185.20,netflow_172.27.185.60,netflow_172.28.90.33,netflow_172.28.132.136,netflow_172.28.133.233,netflow_172.28.160.154,netflow_172.28.162.20,netflow_172.28.173.40,netflow_172.30.0.196,netflow_172.30.0.197,sflow_10.60.170.4,sflow_10.60.170.5,sflow_10.60.170.6,sflow_10.60.170.7,sflow_10.146.45.211,sflow_10.146.45.212,sflow_10.146.117.82,sflow_10.146.117.83,sflow_69.241.25.8,sflow_96.112.183.206,sflow_96.113.83.5,sflow_172.24.230.9,sflow_172.24.230.43,sflow_172.26.11.119,sflow_172.27.185.60,sflow_172.30.0.200,sflow_172.30.0.201",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "sflow_172.30.0.201,sflow_172.30.0.201",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "netflow_10.131.8.95,netflow_10.131.8.96,netflow_10.131.8.97,netflow_10.131.8.98,netflow_10.131.8.99,netflow_10.131.8.100,netflow_10.131.8.101,netflow_10.131.8.166,netflow_10.131.8.167,netflow_10.131.8.168,netflow_10.131.8.169,netflow_10.146.45.210,netflow_10.146.45.211,netflow_10.146.45.212,netflow_10.146.117.82,netflow_10.146.117.83,netflow_10.146.117.84,netflow_10.146.130.222,netflow_10.146.130.223,netflow_10.146.130.224,netflow_10.146.130.225,netflow_10.146.136.20,netflow_10.146.136.21,netflow_10.146.136.22,netflow_10.146.136.23,netflow_10.146.136.24,netflow_10.146.136.25,netflow_10.146.136.29,netflow_68.87.85.69,netflow_68.87.121.30,netflow_68.87.122.203,netflow_68.87.122.204,netflow_69.241.25.8,netflow_69.241.53.155,netflow_96.96.28.15,netflow_96.96.28.16,netflow_96.102.129.58,netflow_96.102.129.59,netflow_96.104.143.91,netflow_96.104.143.92,netflow_96.106.88.194,netflow_96.106.88.195,netflow_96.107.103.243,netflow_96.107.103.244,netflow_96.112.183.205,netflow_96.112.183.206,netflow_96.113.83.4,netflow_96.113.83.5,netflow_96.115.161.68,netflow_96.115.161.73,netflow_96.115.161.74,netflow_100.92.216.95,netflow_100.92.216.96,netflow_100.93.241.17,netflow_100.93.241.18,netflow_100.93.241.29,netflow_100.93.241.31,netflow_162.150.12.109,netflow_172.27.185.20,netflow_172.27.185.60,netflow_172.28.90.33,netflow_172.28.132.136,netflow_172.28.133.233,netflow_172.28.160.154,netflow_172.28.162.20,netflow_172.28.173.40,netflow_172.30.0.196,netflow_172.30.0.197,sflow_10.60.170.4,sflow_10.60.170.5,sflow_10.60.170.6,sflow_10.60.170.7,sflow_10.146.45.211,sflow_10.146.45.212,sflow_10.146.117.82,sflow_10.146.117.83,sflow_69.241.25.8,sflow_96.112.183.206,sflow_96.113.83.5,sflow_172.24.230.9,sflow_172.24.230.43,sflow_172.26.11.119,sflow_172.27.185.60,sflow_172.30.0.200,sflow_172.30.0.201",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "n",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "e",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "t",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "f",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "l",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "o",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "w",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "_",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "1",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "0",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": ".",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "3",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "8",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "9",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "5",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": ",",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "6",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "7",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "4",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "2",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "s",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "['netflow_10.131.8.95', 'netflow_10.131.8.96', 'netflow_10.131.8.97', 'netflow_10.131.8.98', 'netflow_10.131.8.99', 'netflow_10.131.8.100', 'netflow_10.131.8.101', 'netflow_10.131.8.166', 'netflow_10.131.8.167', 'netflow_10.131.8.168', 'netflow_10.131.8.169', 'netflow_10.146.45.210', 'netflow_10.146.45.211', 'netflow_10.146.45.212', 'netflow_10.146.117.82', 'netflow_10.146.117.83', 'netflow_10.146.117.84', 'netflow_10.146.130.222', 'netflow_10.146.130.223', 'netflow_10.146.130.224', 'netflow_10.146.130.225', 'netflow_10.146.136.20', 'netflow_10.146.136.21', 'netflow_10.146.136.22', 'netflow_10.146.136.23', 'netflow_10.146.136.24', 'netflow_10.146.136.25', 'netflow_10.146.136.29', 'netflow_68.87.85.69', 'netflow_68.87.121.30', 'netflow_68.87.122.203', 'netflow_68.87.122.204', 'netflow_69.241.25.8', 'netflow_69.241.53.155', 'netflow_96.96.28.15', 'netflow_96.96.28.16', 'netflow_96.102.129.58', 'netflow_96.102.129.59', 'netflow_96.104.143.91', 'netflow_96.104.143.92', 'netflow_96.106.88.194', 'netflow_96.106.88.195', 'netflow_96.107.103.243', 'netflow_96.107.103.244', 'netflow_96.112.183.205', 'netflow_96.112.183.206', 'netflow_96.113.83.4', 'netflow_96.113.83.5', 'netflow_96.115.161.68', 'netflow_96.115.161.73', 'netflow_96.115.161.74', 'netflow_100.92.216.95', 'netflow_100.92.216.96', 'netflow_100.93.241.17', 'netflow_100.93.241.18', 'netflow_100.93.241.29', 'netflow_100.93.241.31', 'netflow_162.150.12.109', 'netflow_172.27.185.20', 'netflow_172.27.185.60', 'netflow_172.28.90.33', 'netflow_172.28.132.136', 'netflow_172.28.133.233', 'netflow_172.28.160.154', 'netflow_172.28.162.20', 'netflow_172.28.173.40', 'netflow_172.30.0.196', 'netflow_172.30.0.197', 'sflow_10.60.170.4', 'sflow_10.60.170.5', 'sflow_10.60.170.6', 'sflow_10.60.170.7', 'sflow_10.146.45.211', 'sflow_10.146.45.212', 'sflow_10.146.117.82', 'sflow_10.146.117.83', 'sflow_69.241.25.8', 'sflow_96.112.183.206', 'sflow_96.113.83.5', 'sflow_172.24.230.9', 'sflow_172.24.230.43', 'sflow_172.26.11.119', 'sflow_172.27.185.60', 'sflow_172.30.0.200', 'sflow_172.30.0.201']",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": []
+    },
+    {
+        "datagroup": "netflow_10.131.8.95",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.96",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.97",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.98",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.99",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.100",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.101",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.166",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.167",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.168",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.131.8.169",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.45.210",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.45.211",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.45.212",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.117.82",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.117.83",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.117.84",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.130.222",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.130.223",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.130.224",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.130.225",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.136.20",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.136.21",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.136.22",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.136.23",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.136.24",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.136.25",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_10.146.136.29",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_68.87.85.69",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_68.87.121.30",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_68.87.122.203",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_68.87.122.204",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_69.241.25.8",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_69.241.53.155",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.96.28.15",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.96.28.16",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.102.129.58",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.102.129.59",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.104.143.91",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.104.143.92",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.106.88.194",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.106.88.195",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.107.103.243",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.107.103.244",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.112.183.205",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.112.183.206",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.113.83.4",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.113.83.5",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.115.161.68",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.115.161.73",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_96.115.161.74",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_100.92.216.95",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_100.92.216.96",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_100.93.241.17",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_100.93.241.18",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_100.93.241.29",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_100.93.241.31",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_162.150.12.109",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_172.27.185.20",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_172.27.185.60",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_172.28.90.33",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_172.28.132.136",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_172.28.133.233",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_172.28.160.154",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_172.28.162.20",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_172.28.173.40",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_172.30.0.196",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "netflow_172.30.0.197",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_10.60.170.4",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_10.60.170.5",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_10.60.170.6",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_10.60.170.7",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_10.146.45.211",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_10.146.45.212",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_10.146.117.82",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_10.146.117.83",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_69.241.25.8",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_96.112.183.206",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_96.113.83.5",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_172.24.230.9",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_172.24.230.43",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_172.26.11.119",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_172.30.0.200",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    },
+    {
+        "datagroup": "sflow_172.30.0.201",
+        "source_of_truth": "BIG-IP 2b",
+        "subscribers": [
+            "BIG-IP 2b",
+            "BIG-IP 1b",
+            "BIG-IP 2a",
+            "BIG-IP 1a"
+        ]
+    }
+]
