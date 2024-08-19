@@ -220,3 +220,6 @@ Temporary Items
 Thumbs.db
 ehthumbs.db
 
+# Snapshots
+/snapshots/*
+/snapshots/**/*
