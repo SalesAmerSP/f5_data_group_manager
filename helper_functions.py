@@ -349,3 +349,57 @@ def deploy_datagroup_to_device(device, datagroup):
     except Exception as err:
         flash(f'Error occurred: {err}')
         return False
+
+def retrieve_cm_devices(address, username, password):
+    url = f"https://{address}/mgmt/tm/cm/device"
+    auth = HTTPBasicAuth(username, password)
+    try:
+        response = requests.get(url, auth=auth, verify=False, timeout=5)
+        response.raise_for_status()
+        cm_devices = []
+        for item in response.json().get('items', []):
+            cm_devices.append({
+                'hostname': item.get('hostname'),
+                'managementIp': item.get('managementIp')
+            })
+        return cm_devices
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Failed to retrieve CM devices: {e}")
+    
+def retrieve_device_mgmt_ip(address, username, password):
+    url = f"https://{address}/mgmt/tm/sys/management-ip"
+    auth = HTTPBasicAuth(username, password)
+    try:
+        response = requests.get(url, auth=auth, verify=False, timeout=5)
+        response.raise_for_status()
+        items = response.json().get('items', [])
+        
+        if not items:
+            raise ValueError("No management IPs found in the response")
+
+        # Assuming you want the first management IP found
+        mgmt_ip_with_cidr = items[0].get('name', '')
+        
+        if mgmt_ip_with_cidr:
+            # Remove CIDR notation (e.g., "10.1.1.8/24" -> "10.1.1.8")
+            mgmt_ip = mgmt_ip_with_cidr.split('/')[0]
+            return mgmt_ip
+        else:
+            raise ValueError("Management IP not found in the response")
+    
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Failed to retrieve management IP: {e}")
+
+def retrieve_hostname(address, username, password):
+    url = f"https://{address}/mgmt/tm/sys/global-settings"
+    auth = HTTPBasicAuth(username, password)
+    try:
+        response = requests.get(url, auth=auth, verify=False, timeout=5)
+        response.raise_for_status()
+        # Parse the JSON and extract the hostname
+        hostname = response.json().get('hostname', '')
+        if not hostname:
+            raise ValueError("Hostname not found in the response")
+        return hostname
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Failed to retrieve hostname: {e}")

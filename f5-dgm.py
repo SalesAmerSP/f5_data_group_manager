@@ -17,28 +17,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timezone
 from io import StringIO, BytesIO
 from ipaddress import ip_address, ip_network
-from helper_functions import (
-    test_dns_resolution, 
-    allowed_file, 
-    read_json, 
-    write_json, 
-    lint_csv, 
-    lint_json, 
-    is_device_reachable, 
-    verify_device_credentials,
-    merge_datagroups,
-    process_csv,
-    process_json,
-    fetch_datagroups_from_bigip,
-    lint_datagroup_csv,
-    is_builtin_datagroup,
-    lint_values_csv,
-    lint_values_json,
-    fetch_and_filter_datagroup_from_device,
-    delete_datagroup_from_device,
-    deploy_datagroup_to_device,
-    import_datagroup_from_device
-)
+from helper_functions import *
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR)
@@ -538,13 +517,20 @@ def add_device():
         password = request.form['password']
         
         if verify_device_credentials(address, username, password):
-            devices = read_json(DEVICES_FILE)
-            devices.append({'name': name, 'address': address, 'username': username, 'password': encrypt_password(password)})
-            write_json(DEVICES_FILE, devices)
             flash('Device added successfully!')
         else:
             flash('Failed to verify the device credentials.')
-        
+
+        # Retrieve CM peer devices
+        cm_devices = retrieve_cm_devices(address, username, password)
+
+        devices = read_json(DEVICES_FILE)
+        devices.append({'name': name, 'address': address, 'username': username, 'password': encrypt_password(password)})
+        try:
+            write_json(DEVICES_FILE, devices)
+        except Exception as e:
+            flash(f'An error occurred: {e}')
+            
         return redirect(url_for('big_ips'))
     
     return render_template('add_device.html')
