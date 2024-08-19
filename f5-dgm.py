@@ -159,7 +159,7 @@ def add_datagroup():
 
         return redirect(url_for('index'))
 
-    return render_template('add_datagroup.html', timestamp = f'{datetime.now(timezone.utc).strftime('%m-%d-%Y at %H:%M:%S')} UTC')
+    return render_template('add_datagroup.html', timestamp = f'{datetime.now(timezone.utc).strftime("%m-%d-%Y at %H:%M:%S")} UTC')
 
 # App route for deleting a local copy of a datagroup
 @app.route('/remove_datagroup', methods=['POST'])
@@ -223,7 +223,7 @@ def export_datagroup_csv():
             csv_bytes,
             mimetype='text/csv',
             as_attachment=True,
-            download_name=f'datagroup-{datagroup['name']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv'
+            download_name=f'datagroup-{datagroup["name"]}-{datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")}UTC.csv'
         )
     except Exception as e:
         flash(f'Unexpected error: {str(e)}')
@@ -248,7 +248,7 @@ def export_datagroup_json():
             json_bytes,
             mimetype='application/json',
             as_attachment=True,
-            download_name=f'datagroup-{datagroup_name}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.json'
+            download_name=f'datagroup-{datagroup_name}-{datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")}UTC.json'
         )
     except Exception as e:
         flash(f'Unexpected error: {str(e)}')
@@ -619,7 +619,7 @@ def export_all_datagroups_json(device_name):
         flash(f'No data groups found on device {device_name}')
         return redirect(url_for('big_ips'))
 
-    filename = f'all-data-groups-{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.json'
+    filename = f'all-data-groups-{device["address"]}-{datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")}UTC.json'
     
     json_bytes = BytesIO(json.dumps(datagroups).encode('utf-8'))
     json_bytes.seek(0)
@@ -644,7 +644,7 @@ def export_all_datagroups_csv(device_name):
         flash(f'No data groups found on device {device_name}')
         return redirect(url_for('big_ips'))
 
-    filename = f'all-data-groups-{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv'
+    filename = f'all-data-groups-{device["address"]}-{datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")}UTC.csv'
 
     csv_string = StringIO()
     writer = csv.writer(csv_string)
@@ -699,7 +699,7 @@ def export_datagroup_from_bigip_csv():
     csv_bytes = BytesIO(csv_string.getvalue().encode('utf-8'))
     csv_bytes.seek(0)
 
-    filename = f"datagroup-{datagroup_name}_exported_from_{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.csv"
+    filename = f"datagroup-{datagroup_name}_exported_from_{device["address"]}-{datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")}UTC.csv"
     return send_file(
         csv_bytes,
         mimetype='text/csv',
@@ -728,7 +728,7 @@ def export_datagroup_from_bigip_json():
     json_bytes = BytesIO(json.dumps(datagroup).encode('utf-8'))
     json_bytes.seek(0)
 
-    filename = f"datagroup-{datagroup_name}_exported_from_{device['address']}-{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}UTC.json"
+    filename = f"datagroup-{datagroup_name}_exported_from_{device["address"]}-{datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")}UTC.json"
     return send_file(
         json_bytes,
         mimetype='application/json',
