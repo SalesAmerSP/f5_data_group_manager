@@ -1,0 +1,25 @@
+{% extends "base.html" %} {% block content %}
+<h2>Set Subscribers</h2>
+
+<p>Select BIG-IP devices to subscribe to the selected datagroups:</p>
+
+<form action="{{ url_for('set_subscribers') }}" method="post">
+  {% for datagroup in selected_datagroups %}
+  <input type="hidden" name="datagroups" value="{{ datagroup }}" />
+  {% endfor %}
+
+  <div>
+    <label>Select Subscribers:</label>
+    <br />
+    {% for device in devices %}
+    <input type="checkbox" name="subscribers" value="{{ device.name }}" /> {{
+    device.name }} ({{ device.address }})<br />
+    {% endfor %}
+  </div>
+
+  <button type="submit" class="button">Set Subscribers</button>
+</form>
+
+<a href="{{ url_for('index') }}" class="button">Cancel</a>
+
+{% endblock %}

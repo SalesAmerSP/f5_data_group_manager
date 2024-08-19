@@ -4,7 +4,7 @@ import requests
 import csv
 from requests.auth import HTTPBasicAuth
 from encryption import decrypt_password
-from config import DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS
+from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS, HIERARCHY_FILE
 
 # Constants
 ALLOWED_EXTENSIONS = {'csv', 'json'}
@@ -349,3 +349,14 @@ def deploy_datagroup_to_device(device, datagroup):
     except Exception as err:
         flash(f'Error occurred: {err}')
         return False
+
+def read_hierarchy():
+    try:
+        with open(HIERARCHY_FILE, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {"datagroups": {}}
+
+def write_hierarchy(hierarchy):
+    with open(HIERARCHY_FILE, 'w') as file:
+        json.dump(hierarchy, file, indent=4)
