@@ -1,28 +1,49 @@
-{% extends "base.html" %} {% block content %}
-<h2>BIG-IP Devices</h2>
+{% extends "base.html" %}
 
-<a href="{{ url_for('add_device') }}" class="button" id="add-device-button">Add BIG-IP</a>
+{% block content %}
+<h2>BIG-IP Device Groups</h2>
+
+<a href="{{ url_for('add_device_group') }}" class="button" id="add-device-button">Add BIG-IP Device Group</a>
 
 <div class="table-container">
   <table>
     <tr>
       <th>Name</th>
-      <th>Address</th>
-      <th>Actions</th>
+      <th colspan="2">Members</th>
+      <th>Device Actions</th>
+      <th>Device Group Actions</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>Hostname</th>
+      <th>Management IP</th>
+      <th></th>
     </tr>
     {% for device in devices %}
+    {% for member in device.members %}
     <tr>
-      <td>{{ device.name }}</td>
-      <td>{{ device.address }}</td>
+      {% if loop.first %}
+      <td rowspan="{{ device.members|length }}">{{ device.name }}</td>
+      {% endif %}
+      <td>{{ member.hostname }}</td>
+      <td>{{ member.mgmt_ip }}</td>
       <td>
+        <form action="{{ url_for('modify_management_ip', device_name=device.name, member_name=member.hostname) }}" method="post" style="display:inline;">
+          <input type="hidden" name="hostname" value="{{ member.hostname }}">
+          <input type="hidden" name="current_mgmt_ip" value="{{ member.mgmt_ip }}">
+          <button type="submit" class="button">Modify IP/FQDN</button>
+        </form>
         <form
-          action="{{ url_for('browse_datagroups', device_name=device.name) }}"
+          action="{{ url_for('browse_datagroups', device_name=device.name, member_hostname=member.hostname) }}"
           method="get"
           style="display: inline"
         >
           <input type="hidden" name="device_name" value="{{ device.name }}" />
           <button type="submit" class="button">Browse Data Groups</button>
         </form>
+      </td>
+      {% if loop.first %}
+      <td rowspan="{{ device.members|length }}">
 
         <form
           action="{{ url_for('update_device_credentials') }}"
@@ -43,7 +64,9 @@
           <button type="submit" class="red-button">Remove</button>
         </form>
       </td>
+      {% endif %}
     </tr>
+    {% endfor %}
     {% endfor %}
   </table>
 </div>
@@ -51,7 +74,7 @@
 <script>
   function confirmDeletion(deviceName) {
     return confirm(
-      "Are you sure you want to delete the device: " + deviceName + "?"
+      "Are you sure you want to delete the device group: " + deviceName + "?"
     );
   }
 </script>

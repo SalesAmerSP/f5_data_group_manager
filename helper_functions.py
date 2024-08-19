@@ -236,9 +236,11 @@ def fetch_and_filter_datagroup_from_device(device, datagroup_name):
         flash(f'Failed to fetch data group {datagroup_name} from device {device['name']}: {str(e)}')
         return None
 
-def fetch_datagroups_from_bigip(device):
+def fetch_datagroups_from_bigip(device_group, member_hostname):
+    device_group_name = device_group['name']
+    member_host = next((host for mgmt_ip in device_group['members'] if host['hostname'] == member_hostname), None)
     try:
-        if not test_dns_resolution(device['address']):
+        if not test_dns_resolution(mgmt_ip):
             flash(f'DNS resolution failed for device: {device['name']}')
             return []
     except Exception as e:

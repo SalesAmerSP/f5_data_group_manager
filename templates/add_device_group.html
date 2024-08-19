@@ -3,7 +3,7 @@
 {% block content %}
 <h2>Add Device</h2>
 
-<form method="post" action="{{ url_for('add_device') }}">
+<form method="post" action="{{ url_for('add_device_group') }}">
   <!-- Device Name Input -->
   <div class="form-group">
     <label for="name">Cluster Name:</label>
@@ -12,7 +12,7 @@
 
   <!-- Device Address Input -->
   <div class="form-group">
-    <label for="address">Address:</label>
+    <label for="address">Enter an IP/FQDN of the primary device:</label>
     <input type="text" id="address" name="address" required />
   </div>
 

@@ -354,7 +354,7 @@ def import_from_bigips():
     device_datagroups = []
 
     for device in devices:
-        datagroups = fetch_datagroups_from_bigip(device)
+        datagroups = fetch_datagroups_from_bigip(device_group, hostname)
         if datagroups:
             device['datagroups'] = datagroups
             device_datagroups.append(device)
@@ -508,33 +508,96 @@ def big_ips():
         return redirect(url_for('index'))
 
 # App route for adding a BIG-IP device
-@app.route('/add_device', methods=['GET', 'POST'])
-def add_device():
+@app.route('/add_device_group', methods=['GET', 'POST'])
+def add_device_group():
     if request.method == 'POST':
         name = request.form['name']
         address = request.form['address']
         username = request.form['username']
         password = request.form['password']
         
-        if verify_device_credentials(address, username, password):
-            flash('Device added successfully!')
-        else:
+        if not verify_device_credentials(address, username, password):
             flash('Failed to verify the device credentials.')
-
+            return render_template('add_device_group.html')
+        
         # Retrieve CM peer devices
         cm_devices = retrieve_cm_devices(address, username, password)
+        new_members = []
 
-        devices = read_json(DEVICES_FILE)
-        devices.append({'name': name, 'address': address, 'username': username, 'password': encrypt_password(password)})
+        for cm_device in cm_devices:
+            mgmt_ip = cm_device.get('managementIp', '')
+            hostname = cm_device.get('hostname', '')
+            new_members.append({"hostname": hostname, "mgmt_ip": mgmt_ip})
+
         try:
+            devices = read_json(DEVICES_FILE)
+
+            # Check if any of the new members already exist in another group
+            for existing_group in devices:
+                for existing_member in existing_group['members']:
+                    for new_member in new_members:
+                        if existing_member['mgmt_ip'] == new_member['mgmt_ip']:
+                            flash(f"Device with IP {new_member['mgmt_ip']} already exists in another group.")
+                            return render_template('add_device_group.html')
+
+            # If no conflicts, add the new device group
+            devices.append({'name': name, 'members': new_members, 'username': username, 'password': encrypt_password(password)})
             write_json(DEVICES_FILE, devices)
+            flash('Device group added successfully!')
         except Exception as e:
             flash(f'An error occurred: {e}')
             
         return redirect(url_for('big_ips'))
     
-    return render_template('add_device.html')
+    return render_template('add_device_group.html')
 
+@app.route('/modify_management_ip', methods=['GET', 'POST'])
+def modify_management_ip():
+    if request.method == 'POST':
+        # Handle the form submission to show the modification page
+        device_name = request.form['device_name']
+        hostname = request.form['hostname']
+        current_mgmt_ip = request.form['current_mgmt_ip']
+        
+        return render_template('modify_management_ip.html', device_name=device_name, hostname=hostname, current_mgmt_ip=current_mgmt_ip)
+    
+    # If the request method is GET (direct access), handle it appropriately
+    elif request.method == 'GET':
+        device_name = request.args.get('device_name')
+        hostname = request.args.get('hostname')
+        current_mgmt_ip = request.args.get('current_mgmt_ip')
+        
+        if not device_name or not hostname or not current_mgmt_ip:
+            flash('Missing required parameters.')
+            return redirect(url_for('big_ips'))
+        
+        return render_template('modify_management_ip.html', device_name=device_name, hostname=hostname, current_mgmt_ip=current_mgmt_ip)
+
+@app.route('/update_management_ip', methods=['POST'])
+def update_management_ip():
+    device_name = request.form['device_name']
+    hostname = request.form['hostname']
+    new_mgmt_ip = request.form['new_mgmt_ip']
+
+    # Perform DNS resolution check
+    try:
+        socket.gethostbyname(new_mgmt_ip)
+    except socket.gaierror:
+        flash(f"DNS resolution failed for IP/FQDN: {new_mgmt_ip}")
+        return redirect(url_for('big_ips'))
+
+    devices = read_json(DEVICES_FILE)
+
+    for device in devices:
+        if device['name'] == device_name:
+            for member in device['members']:
+                if member['hostname'] == hostname:
+                    member['mgmt_ip'] = new_mgmt_ip
+                    break
+
+    write_json(DEVICES_FILE, devices)
+    flash('Management IP updated successfully!')
+    return redirect(url_for('big_ips'))
 #App route for removing a BIG-IP device
 @app.route('/remove_device', methods=['POST'])
 def remove_device():
@@ -577,15 +640,15 @@ def update_device_credentials():
             return redirect(url_for('big_ips'))
 
 # App route to browsing datagroups on the BIG-IP
-@app.route('/browse_datagroups/<device_name>', methods=['GET'])
-def browse_datagroups(device_name):
+@app.route('/browse_datagroups/<device_name>/<member_hostname>', methods=['GET'])
+def browse_datagroups(device_name, member_hostname):
     devices = read_json(DEVICES_FILE)
     device = next((d for d in devices if d['name'] == device_name), None)
     if not device:
-        flash(f'Device {device_name} not found')
+        flash(f'Device group {device_name} not found')
         return redirect(url_for('big_ips'))
 
-    datagroups = fetch_datagroups_from_bigip(device)
+    datagroups = fetch_datagroups_from_bigip(device_name, member_hostname)
     if not datagroups:
         flash(f'No data groups found on device {device_name}')
         return redirect(url_for('big_ips'))
@@ -600,7 +663,7 @@ def export_all_datagroups_json(device_name):
         flash(f'Device {device_name} not found')
         return redirect(url_for('big_ips'))
 
-    datagroups = fetch_datagroups_from_bigip(device)
+    datagroups = fetch_datagroups_from_bigip(device_group, hostname)
     if not datagroups:
         flash(f'No data groups found on device {device_name}')
         return redirect(url_for('big_ips'))
@@ -625,7 +688,7 @@ def export_all_datagroups_csv(device_name):
         flash(f'Device {device_name} not found')
         return redirect(url_for('big_ips'))
 
-    datagroups = fetch_datagroups_from_bigip(device)
+    datagroups = fetch_datagroups_from_bigip(device_group, hostname)
     if not datagroups:
         flash(f'No data groups found on device {device_name}')
         return redirect(url_for('big_ips'))
@@ -732,7 +795,7 @@ def remove_datagroup_from_bigips():
 
     # Fetch datagroups from each device
     for device in devices:
-        datagroups = fetch_datagroups_from_bigip(device)
+        datagroups = fetch_datagroups_from_bigip(device_group, hostname)
         if datagroups:
             for dg in datagroups:
                 dg['partition'] = dg.get('partition', 'Common')
