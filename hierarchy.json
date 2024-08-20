@@ -12,7 +12,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:59:06.831016+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.95,netflow_10.131.8.96,netflow_10.131.8.97,netflow_10.131.8.98,netflow_10.131.8.99,netflow_10.131.8.100,netflow_10.131.8.101,netflow_10.131.8.166,netflow_10.131.8.167,netflow_10.131.8.168,netflow_10.131.8.169,netflow_10.146.45.210,netflow_10.146.45.211,netflow_10.146.45.212,netflow_10.146.117.82,netflow_10.146.117.83,netflow_10.146.117.84,netflow_10.146.130.222,netflow_10.146.130.223,netflow_10.146.130.224,netflow_10.146.130.225,netflow_10.146.136.20,netflow_10.146.136.21,netflow_10.146.136.22,netflow_10.146.136.23,netflow_10.146.136.24,netflow_10.146.136.25,netflow_10.146.136.29,netflow_68.87.85.69,netflow_68.87.121.30,netflow_68.87.122.203,netflow_68.87.122.204,netflow_69.241.25.8,netflow_69.241.53.155,netflow_96.96.28.15,netflow_96.96.28.16,netflow_96.102.129.58,netflow_96.102.129.59,netflow_96.104.143.91,netflow_96.104.143.92,netflow_96.106.88.194,netflow_96.106.88.195,netflow_96.107.103.243,netflow_96.107.103.244,netflow_96.112.183.205,netflow_96.112.183.206,netflow_96.113.83.4,netflow_96.113.83.5,netflow_96.115.161.68,netflow_96.115.161.73,netflow_96.115.161.74,netflow_100.92.216.95,netflow_100.92.216.96,netflow_100.93.241.17,netflow_100.93.241.18,netflow_100.93.241.29,netflow_100.93.241.31,netflow_162.150.12.109,netflow_172.27.185.20,netflow_172.27.185.60,netflow_172.28.90.33,netflow_172.28.132.136,netflow_172.28.133.233,netflow_172.28.160.154,netflow_172.28.162.20,netflow_172.28.173.40,netflow_172.30.0.196,netflow_172.30.0.197,sflow_10.60.170.4,sflow_10.60.170.5,sflow_10.60.170.6,sflow_10.60.170.7,sflow_10.146.45.211,sflow_10.146.45.212,sflow_10.146.117.82,sflow_10.146.117.83,sflow_69.241.25.8,sflow_96.112.183.206,sflow_96.113.83.5,sflow_172.24.230.9,sflow_172.24.230.43,sflow_172.26.11.119,sflow_172.27.185.60,sflow_172.30.0.200,sflow_172.30.0.201,netflow_10.131.8.95,netflow_10.131.8.96,netflow_10.131.8.97,netflow_10.131.8.98,netflow_10.131.8.99,netflow_10.131.8.100,netflow_10.131.8.101,netflow_10.131.8.166,netflow_10.131.8.167,netflow_10.131.8.168,netflow_10.131.8.169,netflow_10.146.45.210,netflow_10.146.45.211,netflow_10.146.45.212,netflow_10.146.117.82,netflow_10.146.117.83,netflow_10.146.117.84,netflow_10.146.130.222,netflow_10.146.130.223,netflow_10.146.130.224,netflow_10.146.130.225,netflow_10.146.136.20,netflow_10.146.136.21,netflow_10.146.136.22,netflow_10.146.136.23,netflow_10.146.136.24,netflow_10.146.136.25,netflow_10.146.136.29,netflow_68.87.85.69,netflow_68.87.121.30,netflow_68.87.122.203,netflow_68.87.122.204,netflow_69.241.25.8,netflow_69.241.53.155,netflow_96.96.28.15,netflow_96.96.28.16,netflow_96.102.129.58,netflow_96.102.129.59,netflow_96.104.143.91,netflow_96.104.143.92,netflow_96.106.88.194,netflow_96.106.88.195,netflow_96.107.103.243,netflow_96.107.103.244,netflow_96.112.183.205,netflow_96.112.183.206,netflow_96.113.83.4,netflow_96.113.83.5,netflow_96.115.161.68,netflow_96.115.161.73,netflow_96.115.161.74,netflow_100.92.216.95,netflow_100.92.216.96,netflow_100.93.241.17,netflow_100.93.241.18,netflow_100.93.241.29,netflow_100.93.241.31,netflow_162.150.12.109,netflow_172.27.185.20,netflow_172.27.185.60,netflow_172.28.90.33,netflow_172.28.132.136,netflow_172.28.133.233,netflow_172.28.160.154,netflow_172.28.162.20,netflow_172.28.173.40,netflow_172.30.0.196,netflow_172.30.0.197,sflow_10.60.170.4,sflow_10.60.170.5,sflow_10.60.170.6,sflow_10.60.170.7,sflow_10.146.45.211,sflow_10.146.45.212,sflow_10.146.117.82,sflow_10.146.117.83,sflow_69.241.25.8,sflow_96.112.183.206,sflow_96.113.83.5,sflow_172.24.230.9,sflow_172.24.230.43,sflow_172.26.11.119,sflow_172.27.185.60,sflow_172.30.0.200,sflow_172.30.0.201",
@@ -171,7 +173,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:35.463389+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.96",
@@ -180,7 +184,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:37.249903+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.97",
@@ -189,7 +195,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:38.993883+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.98",
@@ -198,7 +206,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:40.733825+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.99",
@@ -207,7 +217,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:42.705241+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.100",
@@ -216,7 +228,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:44.490874+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.101",
@@ -225,7 +239,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:46.272864+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.166",
@@ -234,7 +250,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:48.656669+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.167",
@@ -243,7 +261,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:50.411288+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.168",
@@ -252,7 +272,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:52.231490+00:00"
     },
     {
         "datagroup": "netflow_10.131.8.169",
@@ -261,7 +283,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:54.083424+00:00"
     },
     {
         "datagroup": "netflow_10.146.45.210",
@@ -270,7 +294,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:55.833785+00:00"
     },
     {
         "datagroup": "netflow_10.146.45.211",
@@ -279,7 +305,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:57.610328+00:00"
     },
     {
         "datagroup": "netflow_10.146.45.212",
@@ -288,7 +316,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:56:59.393594+00:00"
     },
     {
         "datagroup": "netflow_10.146.117.82",
@@ -297,7 +327,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:01.250408+00:00"
     },
     {
         "datagroup": "netflow_10.146.117.83",
@@ -306,7 +338,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:03.138246+00:00"
     },
     {
         "datagroup": "netflow_10.146.117.84",
@@ -315,7 +349,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:04.889862+00:00"
     },
     {
         "datagroup": "netflow_10.146.130.222",
@@ -324,7 +360,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:07.415881+00:00"
     },
     {
         "datagroup": "netflow_10.146.130.223",
@@ -333,7 +371,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:09.215690+00:00"
     },
     {
         "datagroup": "netflow_10.146.130.224",
@@ -342,7 +382,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:11.089120+00:00"
     },
     {
         "datagroup": "netflow_10.146.130.225",
@@ -351,7 +393,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:12.888688+00:00"
     },
     {
         "datagroup": "netflow_10.146.136.20",
@@ -360,7 +404,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:14.684429+00:00"
     },
     {
         "datagroup": "netflow_10.146.136.21",
@@ -369,7 +415,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:16.451401+00:00"
     },
     {
         "datagroup": "netflow_10.146.136.22",
@@ -378,7 +426,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:18.255985+00:00"
     },
     {
         "datagroup": "netflow_10.146.136.23",
@@ -387,7 +437,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:20.118571+00:00"
     },
     {
         "datagroup": "netflow_10.146.136.24",
@@ -396,7 +448,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:21.831890+00:00"
     },
     {
         "datagroup": "netflow_10.146.136.25",
@@ -405,7 +459,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:23.740900+00:00"
     },
     {
         "datagroup": "netflow_10.146.136.29",
@@ -414,7 +470,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:25.701407+00:00"
     },
     {
         "datagroup": "netflow_68.87.85.69",
@@ -423,7 +481,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:27.522727+00:00"
     },
     {
         "datagroup": "netflow_68.87.121.30",
@@ -432,7 +492,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:29.366972+00:00"
     },
     {
         "datagroup": "netflow_68.87.122.203",
@@ -441,7 +503,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:31.114329+00:00"
     },
     {
         "datagroup": "netflow_68.87.122.204",
@@ -450,7 +514,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:32.875808+00:00"
     },
     {
         "datagroup": "netflow_69.241.25.8",
@@ -459,7 +525,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:35.358521+00:00"
     },
     {
         "datagroup": "netflow_69.241.53.155",
@@ -468,7 +536,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:37.083133+00:00"
     },
     {
         "datagroup": "netflow_96.96.28.15",
@@ -477,7 +547,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:38.781394+00:00"
     },
     {
         "datagroup": "netflow_96.96.28.16",
@@ -486,7 +558,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:40.483259+00:00"
     },
     {
         "datagroup": "netflow_96.102.129.58",
@@ -495,7 +569,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:42.291288+00:00"
     },
     {
         "datagroup": "netflow_96.102.129.59",
@@ -504,7 +580,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:43.997170+00:00"
     },
     {
         "datagroup": "netflow_96.104.143.91",
@@ -513,7 +591,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:45.753234+00:00"
     },
     {
         "datagroup": "netflow_96.104.143.92",
@@ -522,7 +602,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:47.556182+00:00"
     },
     {
         "datagroup": "netflow_96.106.88.194",
@@ -531,7 +613,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:49.332725+00:00"
     },
     {
         "datagroup": "netflow_96.106.88.195",
@@ -540,7 +624,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:51.373435+00:00"
     },
     {
         "datagroup": "netflow_96.107.103.243",
@@ -549,7 +635,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:53.489177+00:00"
     },
     {
         "datagroup": "netflow_96.107.103.244",
@@ -558,7 +646,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:55.268303+00:00"
     },
     {
         "datagroup": "netflow_96.112.183.205",
@@ -567,7 +657,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:57.014454+00:00"
     },
     {
         "datagroup": "netflow_96.112.183.206",
@@ -576,7 +668,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:57:58.936383+00:00"
     },
     {
         "datagroup": "netflow_96.113.83.4",
@@ -585,7 +679,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:00.749156+00:00"
     },
     {
         "datagroup": "netflow_96.113.83.5",
@@ -594,7 +690,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:02.667649+00:00"
     },
     {
         "datagroup": "netflow_96.115.161.68",
@@ -603,7 +701,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:04.455638+00:00"
     },
     {
         "datagroup": "netflow_96.115.161.73",
@@ -612,7 +712,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:06.269543+00:00"
     },
     {
         "datagroup": "netflow_96.115.161.74",
@@ -621,7 +723,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:08.049046+00:00"
     },
     {
         "datagroup": "netflow_100.92.216.95",
@@ -630,7 +734,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:10.047705+00:00"
     },
     {
         "datagroup": "netflow_100.92.216.96",
@@ -639,7 +745,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:12.093698+00:00"
     },
     {
         "datagroup": "netflow_100.93.241.17",
@@ -648,7 +756,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:14.070141+00:00"
     },
     {
         "datagroup": "netflow_100.93.241.18",
@@ -657,7 +767,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:15.900666+00:00"
     },
     {
         "datagroup": "netflow_100.93.241.29",
@@ -666,7 +778,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:18.168268+00:00"
     },
     {
         "datagroup": "netflow_100.93.241.31",
@@ -675,7 +789,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:20.064466+00:00"
     },
     {
         "datagroup": "netflow_162.150.12.109",
@@ -684,7 +800,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:21.828953+00:00"
     },
     {
         "datagroup": "netflow_172.27.185.20",
@@ -693,7 +811,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:23.741459+00:00"
     },
     {
         "datagroup": "netflow_172.27.185.60",
@@ -702,7 +822,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:26.122652+00:00"
     },
     {
         "datagroup": "netflow_172.28.90.33",
@@ -711,7 +833,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:27.849391+00:00"
     },
     {
         "datagroup": "netflow_172.28.132.136",
@@ -720,7 +844,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:29.631385+00:00"
     },
     {
         "datagroup": "netflow_172.28.133.233",
@@ -729,7 +855,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:31.351294+00:00"
     },
     {
         "datagroup": "netflow_172.28.160.154",
@@ -738,7 +866,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:33.129169+00:00"
     },
     {
         "datagroup": "netflow_172.28.162.20",
@@ -747,7 +877,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:34.870391+00:00"
     },
     {
         "datagroup": "netflow_172.28.173.40",
@@ -756,7 +888,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:36.628950+00:00"
     },
     {
         "datagroup": "netflow_172.30.0.196",
@@ -765,7 +899,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:38.327814+00:00"
     },
     {
         "datagroup": "netflow_172.30.0.197",
@@ -774,7 +910,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:40.232347+00:00"
     },
     {
         "datagroup": "sflow_10.60.170.4",
@@ -783,7 +921,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:42.136811+00:00"
     },
     {
         "datagroup": "sflow_10.60.170.5",
@@ -792,7 +932,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:43.973311+00:00"
     },
     {
         "datagroup": "sflow_10.60.170.6",
@@ -801,7 +943,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:45.752815+00:00"
     },
     {
         "datagroup": "sflow_10.60.170.7",
@@ -810,7 +954,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:47.577920+00:00"
     },
     {
         "datagroup": "sflow_10.146.45.211",
@@ -819,7 +965,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:49.328549+00:00"
     },
     {
         "datagroup": "sflow_10.146.45.212",
@@ -828,7 +976,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:51.033708+00:00"
     },
     {
         "datagroup": "sflow_10.146.117.82",
@@ -837,7 +987,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:52.760701+00:00"
     },
     {
         "datagroup": "sflow_10.146.117.83",
@@ -846,7 +998,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:54.568708+00:00"
     },
     {
         "datagroup": "sflow_69.241.25.8",
@@ -855,7 +1009,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:56.300759+00:00"
     },
     {
         "datagroup": "sflow_96.112.183.206",
@@ -864,7 +1020,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:58.007147+00:00"
     },
     {
         "datagroup": "sflow_96.113.83.5",
@@ -873,7 +1031,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:58:59.777604+00:00"
     },
     {
         "datagroup": "sflow_172.24.230.9",
@@ -882,7 +1042,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:59:01.529440+00:00"
     },
     {
         "datagroup": "sflow_172.24.230.43",
@@ -891,7 +1053,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:59:03.327479+00:00"
     },
     {
         "datagroup": "sflow_172.26.11.119",
@@ -900,7 +1064,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:59:05.030023+00:00"
     },
     {
         "datagroup": "sflow_172.30.0.200",
@@ -909,7 +1075,9 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:59:09.414629+00:00"
     },
     {
         "datagroup": "sflow_172.30.0.201",
@@ -918,6 +1086,8 @@
             "BIG-IP 1b",
             "BIG-IP 2b",
             "BIG-IP 2a"
-        ]
+        ],
+        "in_sync": true,
+        "last_checked": "2024-08-20T03:59:12.069498+00:00"
     }
 ]

@@ -101,11 +101,20 @@ def index():
         devices = read_json(DEVICES_FILE)
         datagroups = read_json(DATAGROUPS_FILE)
         hierarchy = read_hierarchy()
+
+        # Convert the last_checked field to a timezone-aware datetime object
+        for entry in hierarchy:
+            if 'last_checked' in entry:
+                entry['last_checked'] = datetime.fromisoformat(entry['last_checked'])
+                if entry['last_checked'].tzinfo is None:
+                    entry['last_checked'] = entry['last_checked'].replace(tzinfo=timezone.utc)
+
     except Exception as e:
         logging.error(f"Error: {e}")
         devices, datagroups, hierarchy = [], [], {}
 
-    return render_template('index.html', devices=devices, datagroups=datagroups, hierarchy=hierarchy)
+    # Pass a timezone-aware datetime object for `now`
+    return render_template('index.html', devices=devices, datagroups=datagroups, hierarchy=hierarchy, now=datetime.utcnow().replace(tzinfo=timezone.utc))
 
 # App route for creating a new data group
 @app.route('/add_datagroup', methods=['GET', 'POST'])
@@ -649,6 +658,8 @@ def view_differences(datagroup_name):
     differences = entry['differences']
     return render_template('view_differences.html', datagroup=datagroup_name, differences=differences)
 
+from datetime import datetime
+
 @app.route('/check_differences', methods=['POST'])
 def check_differences():
     selected_datagroups = request.form.getlist('datagroups')
@@ -693,10 +704,15 @@ def check_differences():
                     'mismatched_records': diff_records['mismatched_records'],
                 })
 
+        # Update entry with differences and last check time
         if all_differences:
             entry['differences'] = all_differences
+            entry['in_sync'] = False
         else:
             entry.pop('differences', None)  # Remove differences if no differences are found
+            entry['in_sync'] = True
+
+        entry['last_checked'] = datetime.now(timezone.utc).isoformat()
 
     write_hierarchy(hierarchy)
 
