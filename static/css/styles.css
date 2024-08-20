@@ -318,3 +318,48 @@ table, th, td {
 .record button:hover {
   background: darkred;
 }
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* Adjust the gap between buttons as needed */
+  margin-bottom: 20px; /* Adjust the margin as needed */
+}
+
+.orange-button {
+  background-color: #FFA500; /* Orange background color */
+  color: white; /* White text color */
+  padding: 10px 20px; /* Padding for the button */
+  border: none; /* No border */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  font-size: 16px; /* Font size */
+  text-align: center; /* Centered text */
+  display: inline-block; /* Inline-block for proper button alignment */
+  transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
+
+.orange-button:hover {
+  background-color: #e69500; /* Darker orange on hover */
+}
+
+.floating-button-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f1f1f1;
+  padding: 10px;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+  z-index: 1000; /* Ensure it stays on top of other elements */
+  text-align: left; /* Center the buttons horizontally */
+}
+
+.floating-button-container button {
+  margin: 0 10px;
+}
+
+body {
+  margin-bottom: 60px; /* Ensure content isn't hidden behind the fixed footer */
+}

@@ -2,9 +2,12 @@ import socket
 import json
 import requests
 import csv
+import ipaddress
+import os
 from requests.auth import HTTPBasicAuth
 from encryption import decrypt_password
-from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS, HIERARCHY_FILE
+from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS, HIERARCHY_FILE, DNS_RESOLVERS_FILE
+from flask import flash
 
 # Constants
 ALLOWED_EXTENSIONS = {'csv', 'json'}
@@ -236,6 +239,13 @@ def fetch_and_filter_datagroup_from_device(device, datagroup_name):
         flash(f'Failed to fetch data group {datagroup_name} from device {device['name']}: {str(e)}')
         return None
 
+def fetch_datagroup_from_bigip(devices, device_name, datagroup_name):
+    device = next((d for d in devices if d['name'] == device_name), None)
+    if not device:
+        return None
+    datagroup = fetch_and_filter_datagroup_from_device(device, datagroup_name)
+    return datagroup
+
 def fetch_datagroups_from_bigip(device):
     try:
         if not test_dns_resolution(device['address']):
@@ -360,3 +370,61 @@ def read_hierarchy():
 def write_hierarchy(hierarchy):
     with open(HIERARCHY_FILE, 'w') as file:
         json.dump(hierarchy, file, indent=4)
+        
+def dns_lookup(ip_or_fqdn):
+    results = {}
+
+    try:
+        # Check if the input is an IP address
+        ip = ipaddress.ip_address(ip_or_fqdn)
+        is_ip = True
+    except ValueError:
+        # If it's not an IP, we assume it's an FQDN
+        is_ip = False
+
+    if is_ip:
+        # Reverse lookup
+        try:
+            reverse_name = socket.gethostbyaddr(ip.exploded)
+            results['reverse'] = reverse_name[0]  # The primary hostname
+        except socket.herror:
+            results['reverse'] = 'No reverse DNS found'
+        except Exception as e:
+            results['reverse'] = f'Error: {e}'
+    else:
+        # Forward lookup
+        try:
+            ipv4_addresses = socket.gethostbyname_ex(ip_or_fqdn)[2]
+            results['A'] = ipv4_addresses
+        except socket.gaierror:
+            results['A'] = 'No A record found'
+        except Exception as e:
+            results['A'] = f'Error: {e}'
+
+        try:
+            ipv6_addresses = socket.getaddrinfo(ip_or_fqdn, None, socket.AF_INET6)
+            results['AAAA'] = [item[4][0] for item in ipv6_addresses]
+        except socket.gaierror:
+            results['AAAA'] = 'No AAAA record found'
+        except Exception as e:
+            results['AAAA'] = f'Error: {e}'
+
+    return results
+
+def load_dns_resolvers():
+    """
+    Load the DNS resolvers from the configuration file.
+    Returns a list of resolvers.
+    """
+    if os.path.exists(DNS_RESOLVERS_FILE):
+        with open(DNS_RESOLVERS_FILE, 'r') as f:  # Open the file in read mode
+            return json.load(f)
+    else:
+        return []
+
+def save_dns_resolvers_to_config(dns_resolvers):
+    """
+    Save the DNS resolvers to the configuration file.
+    """
+    with open(DNS_RESOLVERS_FILE, 'w') as f:
+        json.dump(dns_resolvers, f)

@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Data Groups</h2>
+
+<div class="button-container">
 
 <a href="{{ url_for('add_datagroup') }}" class="button" id="create-new-datagroup-button">Create New Data Group</a>
 
@@ -22,6 +23,8 @@
 
 <a href="{{ url_for('deploy_datagroups') }}" class="button yellow-button" id="deploy-datagroups-button">Deploy Data Groups to BIG-IP</a>
 <a href="{{ url_for('remove_datagroup_from_bigips') }}" class="button red-button" id="remove-datagroups-button">Remove Data Groups from BIG-IP</a>
+</div>
+<h2>Data Groups</h2>
 
 <form id="datagroups-form" method="post">
     <div class="table-container">
@@ -47,7 +50,11 @@
                     <td>{{ datagroup.records|length }}</td>
                     <td>
                         {% set sot = hierarchy | selectattr('datagroup', 'equalto', datagroup.name) | map(attribute='source_of_truth') | list %}
+                        {% set diff = hierarchy | selectattr('datagroup', 'equalto', datagroup.name) | map(attribute='differences') | list %}
                         {{ sot[0] if sot else '<None Specified>' }}
+                        {% if diff and diff[0] %}
+                            <br> <a href="{{ url_for('view_differences', datagroup_name=datagroup.name) }}">View Differences</a>
+                        {% endif %}
                     </td>
                     <td>
                         <form action="{{ url_for('export_datagroup_csv') }}" method="post" style="display:inline;">
@@ -67,13 +74,16 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-
+    </div>    
+</form>
+<div class="floating-button-container">
     <button type="button" class="button blue-button" id="define-source-of-truth-button">Define Source of Truth</button>
     <button type="button" class="button green-button" id="set-subscribers-button">Set Subscribers</button>
-</form>
+    <button type="button" class="button orange-button" id="check-differences-button">Check Differences</button>
+</div>
 
 <script>
+    
     document.getElementById('select-all').addEventListener('change', function() {
         var checkboxes = document.querySelectorAll('input[name="datagroups"]');
         for (var checkbox of checkboxes) {
@@ -81,6 +91,17 @@
         }
     });
 
+    document.getElementById('check-differences-button').addEventListener('click', function() {
+        var form = document.getElementById('datagroups-form');
+        var selectedDatagroups = document.querySelectorAll('input[name="datagroups"]:checked');
+        if (selectedDatagroups.length > 0) {
+            form.action = "{{ url_for('check_differences') }}";
+            form.submit();
+        } else {
+            alert("Please select at least one data group.");
+        }
+    });
+    
     document.getElementById('define-source-of-truth-button').addEventListener('click', function() {
         var form = document.getElementById('datagroups-form');
         var selectedDatagroups = document.querySelectorAll('input[name="datagroups"]:checked');

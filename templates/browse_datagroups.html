@@ -10,7 +10,7 @@
     {% for datagroup in datagroups %}
     <div>
         <h3>/{{ datagroup.partition }}/{{ datagroup.name }}</h3>
-        {{ datagroup.records|length }} records - Description: {{ datagroup.description }}
+        {{ datagroup.records|length }} records - Description: {{ datagroup.description }} - Type: {{ datagroup.type }}
             <div class="datagroups-div">
             <a href="{{ url_for('export_datagroup_from_bigip_csv', device_name=device.name, datagroup_name=datagroup.name) }}" class="small-button">Export to CSV</a>
             <a href="{{ url_for('export_datagroup_from_bigip_json', device_name=device.name, datagroup_name=datagroup.name) }}" class="small-button">Export to JSON</a>
@@ -20,6 +20,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Data</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,6 +28,14 @@
                     <tr>
                         <td>{{ record.name }}</td>
                         <td>{{ record.data }}</td>
+                        {% if datagroup.type == 'ip' %}
+                        <td style="border: 1px solid #dddddd; text-align: left;">
+                            <form action="{{ url_for('dns_lookup_route') }}" method="post" style="display:inline;">
+                                <input type="hidden" name="query" value="{{ record.name }}">
+                                <button type="submit" class="button blue-button">DNS Lookup</button>
+                            </form>
+                        </td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>

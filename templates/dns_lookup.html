@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>DNS Lookup</h2>
+
+<form action="{{ url_for('dns_lookup_route') }}" method="post">
+    <label for="query">Enter IP or FQDN:</label>
+    <input type="text" id="query" name="query">
+    <button type="submit">Lookup</button>
+</form>
+
+{% endblock %}

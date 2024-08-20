@@ -3,11 +3,16 @@
 {% block content %}
 <h2>Deploy Data Groups</h2>
 <form method="post" action="{{ url_for('deploy_datagroups') }}">
+
+    <!-- Device Selection -->
     <label>Select Devices:</label>
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr>
-                <th style="border: 1px solid #dddddd; text-align: center;">Select</th>
+                <th style="border: 1px solid #dddddd; text-align: center;">
+                    Select All
+                    <input type="checkbox" id="select-all-devices">
+                </th>
                 <th style="border: 1px solid #dddddd; text-align: left;">Device Name</th>
                 <th style="border: 1px solid #dddddd; text-align: left;">Address</th>
             </tr>
@@ -16,7 +21,7 @@
             {% for device in devices %}
             <tr>
                 <td style="border: 1px solid #dddddd; text-align: center;">
-                    <input type="checkbox" id="device_{{ device.name }}" name="devices" value="{{ device.name }}">
+                    <input type="checkbox" class="device-checkbox" id="device_{{ device.name }}" name="devices" value="{{ device.name }}">
                 </td>
                 <td style="border: 1px solid #dddddd; text-align: left;">
                     <label for="device_{{ device.name }}">{{ device.name }}</label>
@@ -28,12 +33,18 @@
             {% endfor %}
         </tbody>
     </table>
+
     <br>
+
+    <!-- Data Group Selection -->
     <label>Select Data Groups:</label>
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr>
-                <th style="border: 1px solid #dddddd; text-align: center;">Select</th>
+                <th style="border: 1px solid #dddddd; text-align: center;">
+                    Select All
+                    <input type="checkbox" id="select-all-datagroups">
+                </th>
                 <th style="border: 1px solid #dddddd; text-align: left;">Data Group Name</th>
             </tr>
         </thead>
@@ -41,7 +52,7 @@
             {% for datagroup in datagroups %}
             <tr>
                 <td style="border: 1px solid #dddddd; text-align: center;">
-                    <input type="checkbox" id="datagroup_{{ datagroup.name }}" name="datagroups" value="{{ datagroup.name }}">
+                    <input type="checkbox" class="datagroup-checkbox" id="datagroup_{{ datagroup.name }}" name="datagroups" value="{{ datagroup.name }}">
                 </td>
                 <td style="border: 1px solid #dddddd; text-align: left;">
                     <label for="datagroup_{{ datagroup.name }}">{{ datagroup.name }}</label>
@@ -50,7 +61,26 @@
             {% endfor %}
         </tbody>
     </table>
+
     <br>
     <button type="submit">Deploy Selected Data Groups</button>
 </form>
+
+<!-- JavaScript for Select All functionality -->
+<script>
+    document.getElementById('select-all-devices').addEventListener('change', function() {
+        var checkboxes = document.querySelectorAll('.device-checkbox');
+        for (var checkbox of checkboxes) {
+            checkbox.checked = this.checked;
+        }
+    });
+
+    document.getElementById('select-all-datagroups').addEventListener('change', function() {
+        var checkboxes = document.querySelectorAll('.datagroup-checkbox');
+        for (var checkbox of checkboxes) {
+            checkbox.checked = this.checked;
+        }
+    });
+</script>
+
 {% endblock %}

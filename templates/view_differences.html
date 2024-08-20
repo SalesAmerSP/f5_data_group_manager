@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Differences for {{ datagroup }}</h2>
+
+{% for subscriber in differences %}
+    <h3>Subscriber: {{ subscriber.subscriber_name }}</h3>
+
+    <h4>Missing in Subscriber:</h4>
+    {% if subscriber.missing_in_subscriber %}
+        <ul>
+        {% for record in subscriber.missing_in_subscriber %}
+            <li>{{ record.name }}: {{ record.data }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No missing records in subscriber.</p>
+    {% endif %}
+
+    <h4>Extra in Subscriber:</h4>
+    {% if subscriber.extra_in_subscriber %}
+        <ul>
+        {% for record in subscriber.extra_in_subscriber %}
+            <li>{{ record.name }}: {{ record.data }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No extra records in subscriber.</p>
+    {% endif %}
+
+    <h4>Mismatched Records:</h4>
+    {% if subscriber.mismatched_records %}
+        <ul>
+        {% for record in subscriber.mismatched_records %}
+            <li>{{ record.name }}:
+                <ul>
+                    <li>Source of Truth: {{ record.source_data }}</li>
+                    <li>Subscriber: {{ record.subscriber_data }}</li>
+                </ul>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No mismatched records.</p>
+    {% endif %}
+    <hr>
+{% endfor %}
+
+<a href="{{ url_for('index') }}" class="button">Back</a>
+{% endblock %}
