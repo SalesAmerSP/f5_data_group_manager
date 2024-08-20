@@ -637,6 +637,102 @@ def set_subscribers():
     devices = read_json(DEVICES_FILE)
     return render_template('set_subscribers.html', selected_datagroups=selected_datagroups, devices=devices)
 
+@app.route('/view_differences/<datagroup_name>', methods=['GET'])
+def view_differences(datagroup_name):
+    hierarchy = read_hierarchy()
+    entry = next((item for item in hierarchy if item['datagroup'] == datagroup_name), None)
+    
+    if not entry or not entry.get('differences'):
+        flash('No differences found or data group not found.')
+        return redirect(url_for('index'))
+    
+    differences = entry['differences']
+    return render_template('view_differences.html', datagroup=datagroup_name, differences=differences)
+
+@app.route('/check_differences', methods=['POST'])
+def check_differences():
+    selected_datagroups = request.form.getlist('datagroups')
+    
+    if not selected_datagroups:
+        flash('No data groups selected.')
+        return redirect(url_for('index'))
+
+    devices = read_json(DEVICES_FILE)
+    hierarchy = read_hierarchy()
+
+    for datagroup_name in selected_datagroups:
+        entry = next((item for item in hierarchy if item['datagroup'] == datagroup_name), None)
+        if not entry:
+            flash(f"No source of truth found for data group: {datagroup_name}")
+            continue
+        
+        source_of_truth = entry.get('source_of_truth')
+        subscribers = entry.get('subscribers', [])
+
+        source_data = fetch_datagroup_from_bigip(devices, source_of_truth, datagroup_name)
+        if not source_data:
+            flash(f"Failed to fetch source data for {datagroup_name}")
+            continue
+
+        all_differences = []
+
+        for subscriber in subscribers:
+            subscriber_data = fetch_datagroup_from_bigip(devices, subscriber, datagroup_name)
+            if not subscriber_data:
+                flash(f"Failed to fetch data for {datagroup_name} from {subscriber}")
+                continue
+
+            # Compare source data with subscriber data
+            diff_records = compare_datagroup_records(source_data.get('records', []), subscriber_data.get('records', []))
+
+            if diff_records:
+                all_differences.append({
+                    'subscriber_name': subscriber,
+                    'missing_in_subscriber': diff_records['missing_in_subscriber'],
+                    'extra_in_subscriber': diff_records['extra_in_subscriber'],
+                    'mismatched_records': diff_records['mismatched_records'],
+                })
+
+        if all_differences:
+            entry['differences'] = all_differences
+        else:
+            entry.pop('differences', None)  # Remove differences if no differences are found
+
+    write_hierarchy(hierarchy)
+
+    flash('Differences checked successfully.')
+    return redirect(url_for('index'))
+
+def compare_datagroup_records(source_records, subscriber_records):
+    """
+    Compare the records between source of truth and subscriber, and return the differences.
+    """
+    differences = {
+        'missing_in_subscriber': [],
+        'extra_in_subscriber': [],
+        'mismatched_records': []
+    }
+
+    source_dict = {record['name']: record['data'] for record in source_records}
+    subscriber_dict = {record['name']: record['data'] for record in subscriber_records}
+
+    # Check for missing records in the subscriber
+    for name, data in source_dict.items():
+        if name not in subscriber_dict:
+            differences['missing_in_subscriber'].append({'name': name, 'data': data})
+        elif source_dict[name] != subscriber_dict[name]:
+            differences['mismatched_records'].append({'name': name, 'source_data': data, 'subscriber_data': subscriber_dict[name]})
+
+    # Check for extra records in the subscriber
+    for name, data in subscriber_dict.items():
+        if name not in source_dict:
+            differences['extra_in_subscriber'].append({'name': name, 'data': data})
+
+    if any(differences.values()):
+        return differences
+    else:
+        return None
+
 # App route to browsing datagroups on the BIG-IP
 @app.route('/browse_datagroups/<device_name>', methods=['GET'])
 def browse_datagroups(device_name):
@@ -855,6 +951,46 @@ def deploy_datagroups():
         return redirect(url_for('index'))
     
     return render_template('deploy_datagroups.html', devices=devices, datagroups=datagroups)
+
+@app.route('/global_settings', methods=['GET', 'POST'])
+def global_settings():
+    if request.method == 'POST':
+        dns_resolver = request.form.get('resolver', '')
+        save_dns_resolvers([dns_resolver])  # Save as a list to maintain compatibility with the saving/loading functions
+        flash('DNS Resolver saved successfully!')
+        return redirect(url_for('global_settings'))
+
+    # Load the current DNS resolver
+    dns_resolvers = load_dns_resolvers()
+    dns_resolver = dns_resolvers[0] if dns_resolvers else ''
+    return render_template('global_settings.html', dns_resolver=dns_resolver)
+
+@app.route('/save_dns_resolvers', methods=['POST'])
+def save_dns_resolvers():
+    # Get the DNS resolvers from the form
+    dns_resolver = request.form.get('dns_resolver')
+
+    # Save the resolvers to a configuration file or database
+    save_dns_resolvers_to_config(dns_resolvers)
+
+    flash('DNS resolver updated successfully.')
+    return redirect(url_for('global_settings'))
+
+def save_dns_resolvers(dns_resolvers):
+    try:
+        with open('dns_resolvers.json', 'w') as f:
+            json.dump(dns_resolvers, f)
+    except Exception as e:
+        print(f"Failed to save DNS resolvers: {e}")
+        
+@app.route('/dns_lookup', methods=['GET', 'POST'])
+def dns_lookup_route():
+    if request.method == 'POST':
+        query = request.form.get('query')
+        results = dns_lookup(query)
+        return render_template('dns_results.html', query=query, results=results)
+
+    return render_template('dns_lookup.html')
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=8443, debug=True, ssl_context='adhoc')

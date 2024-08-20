@@ -27,6 +27,7 @@
         }
         nav ul li {
             margin-right: 20px;
+            position: relative; /* For dropdown positioning */
         }
         nav ul li a {
             text-decoration: none;
@@ -42,6 +43,34 @@
             font-weight: bold;
             background-color: #d0d0d0;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        /* Dropdown menu styling */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-top: 12px;
+        }
+        nav ul li:hover .dropdown-content {
+            display: block;
+        }
+        .dropdown-content a, .dropdown-content button {
+            color: #333;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+            border: none;
+            background: none;
+            width: 100%;
+        }
+        .dropdown-content a:hover, .dropdown-content button:hover {
+            background-color: #e0e0e0;
         }
         /* Main content area styling */
         .content {
@@ -74,8 +103,21 @@
         <!-- Navigation bar -->
         <nav>
             <ul>
-                <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Data Groups</a></li>
+                <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Data Groups</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('add_datagroup') }}">Create New Data Group</a>
+                        <a href="{{ url_for('import_from_file') }}">Import from File</a>
+                        <a href="{{ url_for('import_from_url') }}">Import from URL</a>
+                        <a href="{{ url_for('import_from_bigips') }}">Import from BIG-IP</a>
+                        <form action="{{ url_for('flush_datagroups') }}" method="post" onsubmit="return confirm('Are you sure you want to delete all data groups from the local cache?');">
+                            <button type="submit" class="yellow-button">Flush Local Cache</button>
+                        </form>
+                        <a href="{{ url_for('deploy_datagroups') }}" class="yellow-button">Deploy Data Groups to BIG-IP</a>
+                        <a href="{{ url_for('remove_datagroup_from_bigips') }}" class="red-button">Remove Data Groups from BIG-IP</a>
+                    </div>
+                </li>
                 <li><a href="{{ url_for('big_ips') }}" class="{% if request.endpoint == 'big_ips' %}active{% endif %}">BIG-IPs</a></li>
+                <li><a href="{{ url_for('global_settings') }}" class="{% if request.endpoint == 'global_settings' %}active{% endif %}">Global Settings</a></li>
             </ul>
         </nav>
         <!-- Main content area -->
