@@ -11,31 +11,26 @@
     <div>
         <h3>/{{ datagroup.partition }}/{{ datagroup.name }}</h3>
         {{ datagroup.records|length }} records - Description: {{ datagroup.description }} - Type: {{ datagroup.type }}
-            <div class="datagroups-div">
+        
+        <div class="datagroups-div">
+            {% if datagroup.type == 'ip' %}
+                <button class="small-button" onclick="queryDNS('{{ datagroup.name }}')">Query DNS</button>
+            {% endif %}
             <a href="{{ url_for('export_datagroup_from_bigip_csv', device_name=device.name, datagroup_name=datagroup.name) }}" class="small-button">Export to CSV</a>
             <a href="{{ url_for('export_datagroup_from_bigip_json', device_name=device.name, datagroup_name=datagroup.name) }}" class="small-button">Export to JSON</a>
             <button class="small-button" onclick="toggleRecords(this)">Show Records</button>
-            <table class="datagroups-table" style="display: none;">
+            <table class="datagroups-table" style="display: none;" id="{{ datagroup.name }}">
                 <thead>
                     <tr>
                         <th>Name</th>
                         <th>Data</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for record in datagroup.records %}
                     <tr>
                         <td>{{ record.name }}</td>
-                        <td>{{ record.data }}</td>
-                        {% if datagroup.type == 'ip' %}
-                        <td style="border: 1px solid #dddddd; text-align: left;">
-                            <form action="{{ url_for('dns_lookup_route') }}" method="post" style="display:inline;">
-                                <input type="hidden" name="query" value="{{ record.name }}">
-                                <button type="submit" class="button blue-button">DNS Lookup</button>
-                            </form>
-                        </td>
-                        {% endif %}
+                        <td id="data-{{ datagroup.name }}-{{ loop.index0 }}">{{ record.data }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -55,7 +50,51 @@
             button.textContent = "Show Records";
         }
     }
+
+    function queryDNS(datagroupName) {
+        const table = document.getElementById(datagroupName);
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {  // Skip header row
+            const nameCell = rows[i].getElementsByTagName('td')[0];
+            const dataCell = rows[i].getElementsByTagName('td')[1];
+            const ipAddress = nameCell.textContent;
+
+            fetch("{{ url_for('dns_lookup_route') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ query: ipAddress }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // If the server returns an HTTP status other than 2xx, we consider it an error.
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.text(); // Convert the response to JSON
+            })
+            .then(data => {
+                if (data) {
+                    dataCell.textContent += ` (DNS: ${data})`;
+                } else {
+                    dataCell.textContent += " (No DNS records found)";
+                }
+            })
+            .catch(error => {
+                console.error('An error occurred during the DNS lookup:', error);
+                if (error.message.includes('HTTP error')) {
+                    dataCell.textContent += ` (Server returned an error: ${error.message})`;
+                } else if (error.message.includes('Unexpected token')) {
+                    dataCell.textContent += " (Error parsing server response. The server might have returned invalid JSON.)";
+                } else if (error.message.includes('Failed to fetch')) {
+                    dataCell.textContent += " (Network error: Failed to reach the server. Please check your connection.)";
+                } else {
+                    dataCell.textContent += ` (An unexpected error occurred: ${error.message})`;
+                }
+                        });
+        }
+    }
 </script>
     
 {% endblock %}
-
