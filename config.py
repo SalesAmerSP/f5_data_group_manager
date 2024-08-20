@@ -9,7 +9,7 @@ SECRET_KEY_FILE = 'secret.key'
 DEVICES_FILE = 'devices.json'
 DATAGROUPS_FILE = 'datagroups.json'
 HIERARCHY_FILE = 'hierarchy.json'
-DNS_RESOLVERS_FILE = 'dns_resolvers.json'
+DNS_RESOLVERS_FILE = 'dns_resolver.json'
 
 # Define built-in data groups for TMOS (Traffic Management Operating System)
 # These data groups are predefined and can be used for various purposes within the application

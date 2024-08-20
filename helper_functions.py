@@ -431,10 +431,10 @@ def dns_lookup(ip_or_fqdn):
 
     return result
 
-def load_dns_resolvers():
+def load_dns_resolver():
     """
-    Load the DNS resolvers from the configuration file.
-    Returns a list of resolvers.
+    Load the DNS resolver from the configuration file.
+    Returns a list of resolver.
     """
     if os.path.exists(DNS_RESOLVERS_FILE):
         with open(DNS_RESOLVERS_FILE, 'r') as f:  # Open the file in read mode
@@ -442,9 +442,9 @@ def load_dns_resolvers():
     else:
         return []
 
-def save_dns_resolvers_to_config(dns_resolvers):
+def save_dns_resolver_to_config(dns_resolver):
     """
-    Save the DNS resolvers to the configuration file.
+    Save the DNS resolver to the configuration file.
     """
     with open(DNS_RESOLVERS_FILE, 'w') as f:
-        json.dump(dns_resolvers, f)
+        json.dump(dns_resolver, f)
