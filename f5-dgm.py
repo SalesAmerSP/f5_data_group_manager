@@ -64,19 +64,23 @@ def add_no_cache_headers(response):
 
 # Load secret key from file with error handling
 try:
+    # Check if the file exists before trying to open it
+    if not os.path.isfile('secret.key'):
+        raise FileNotFoundError("The 'secret.key' file does not exist. Please create one using 'create_secret_key.py'.")
+
     with open('secret.key', 'r') as f:
         app.secret_key = f.read().strip()
         if not app.secret_key:
-            raise ValueError("Secret key file is empty. Execute the create_secret_key.py file to create one in the project root directory.")
+            raise ValueError("Secret key file is empty. Please run 'create_secret_key.py' to generate a new key.")
 except (FileNotFoundError, PermissionError) as e:
     logging.error(f"Error: {e}")
-    exit(1)
+    sys.exit(2)
 except ValueError as e:
     logging.error(f"Error: {e}")
-    exit(1)
+    sys.exit(2)
 except Exception as e:
     logging.error(f"An unexpected error occurred while reading 'secret.key': {e}")
-    exit(1)
+    sys.exit(2)
 
 # Create the Uploads folder if necessary
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
@@ -85,7 +89,7 @@ try:
         os.makedirs(app.config['UPLOAD_FOLDER'])
 except OSError as e:
     logging.error(f"Failed to create upload folder: {e}")
-    exit(1)
+    sys.exit(1)
 
 # Ensure the JSON files exist
 for filename in [DEVICES_FILE, DATAGROUPS_FILE]:
