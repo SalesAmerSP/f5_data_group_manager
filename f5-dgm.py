@@ -393,10 +393,11 @@ def import_from_bigips():
     return render_template('import_from_bigips.html', devices=device_datagroups, TMOS_BUILT_IN_DATA_GROUPS=TMOS_BUILT_IN_DATA_GROUPS)
 
 
-# App route for updating an existing datagroup
 @app.route('/update_datagroup', methods=['GET', 'POST'])
 def update_datagroup():
     datagroups = read_json(DATAGROUPS_FILE)
+    hierarchy = read_hierarchy()  # Assuming you have a function to read hierarchy data
+
     if request.method == 'POST':
         name = request.form['name']
         new_records = []
@@ -417,12 +418,29 @@ def update_datagroup():
     
     selected_datagroup = None
     description = ""
+    source_of_truth = None
+    subscribers = []
+
     selected_name = request.args.get('name')
     if selected_name:
         selected_datagroup = next((dg for dg in datagroups if dg['name'] == selected_name), None)
-    if 'description' in selected_datagroup:
+        if selected_datagroup:
+            # Get source of truth and subscribers for this data group
+            hierarchy_entry = next((item for item in hierarchy if item['datagroup'] == selected_name), None)
+            if hierarchy_entry:
+                source_of_truth = hierarchy_entry.get('source_of_truth')
+                subscribers = hierarchy_entry.get('subscribers', [])
+
+    if selected_datagroup and 'description' in selected_datagroup:
         description = selected_datagroup['description']
-    return render_template('update_datagroup.html', datagroups=datagroups, selected_datagroup=selected_datagroup, description=description)
+        
+    return render_template(
+        'update_datagroup.html', 
+        selected_datagroup=selected_datagroup, 
+        description=description, 
+        source_of_truth=source_of_truth, 
+        subscribers=subscribers
+    )
 
 # App route for importing values into an existing datagroup
 # App route for importing values into an existing datagroup
