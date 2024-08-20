@@ -8,7 +8,7 @@ import csv
 import ipaddress
 import socket
 import logging
-from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS
+from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS, HIERARCHY_FILE
 from flask_talisman import Talisman
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from requests.auth import HTTPBasicAuth
@@ -17,28 +17,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timezone
 from io import StringIO, BytesIO
 from ipaddress import ip_address, ip_network
-from helper_functions import (
-    test_dns_resolution, 
-    allowed_file, 
-    read_json, 
-    write_json, 
-    lint_csv, 
-    lint_json, 
-    is_device_reachable, 
-    verify_device_credentials,
-    merge_datagroups,
-    process_csv,
-    process_json,
-    fetch_datagroups_from_bigip,
-    lint_datagroup_csv,
-    is_builtin_datagroup,
-    lint_values_csv,
-    lint_values_json,
-    fetch_and_filter_datagroup_from_device,
-    delete_datagroup_from_device,
-    deploy_datagroup_to_device,
-    import_datagroup_from_device
-)
+from helper_functions import *
 
 # Configure logging
 logging.basicConfig(level=logging.ERROR)
@@ -120,17 +99,22 @@ for filename in [DEVICES_FILE, DATAGROUPS_FILE]:
 def index():
     try:
         devices = read_json(DEVICES_FILE)
-    except Exception as e:
-        logging.error(f"Error reading {DEVICES_FILE}: {e}")
-        devices = []
-
-    try:
         datagroups = read_json(DATAGROUPS_FILE)
-    except Exception as e:
-        logging.error(f"Error reading {DATAGROUPS_FILE}: {e}")
-        datagroups = []
+        hierarchy = read_hierarchy()
 
-    return render_template('index.html', devices=devices, datagroups=datagroups)
+        # Convert the last_checked field to a timezone-aware datetime object
+        for entry in hierarchy:
+            if 'last_checked' in entry:
+                entry['last_checked'] = datetime.fromisoformat(entry['last_checked'])
+                if entry['last_checked'].tzinfo is None:
+                    entry['last_checked'] = entry['last_checked'].replace(tzinfo=timezone.utc)
+
+    except Exception as e:
+        logging.error(f"Error: {e}")
+        devices, datagroups, hierarchy = [], [], {}
+
+    # Pass a timezone-aware datetime object for `now`
+    return render_template('index.html', devices=devices, datagroups=datagroups, hierarchy=hierarchy, now=datetime.utcnow().replace(tzinfo=timezone.utc))
 
 # App route for creating a new data group
 @app.route('/add_datagroup', methods=['GET', 'POST'])
@@ -409,10 +393,11 @@ def import_from_bigips():
     return render_template('import_from_bigips.html', devices=device_datagroups, TMOS_BUILT_IN_DATA_GROUPS=TMOS_BUILT_IN_DATA_GROUPS)
 
 
-# App route for updating an existing datagroup
 @app.route('/update_datagroup', methods=['GET', 'POST'])
 def update_datagroup():
     datagroups = read_json(DATAGROUPS_FILE)
+    hierarchy = read_hierarchy()  # Assuming you have a function to read hierarchy data
+
     if request.method == 'POST':
         name = request.form['name']
         new_records = []
@@ -433,12 +418,29 @@ def update_datagroup():
     
     selected_datagroup = None
     description = ""
+    source_of_truth = None
+    subscribers = []
+
     selected_name = request.args.get('name')
     if selected_name:
         selected_datagroup = next((dg for dg in datagroups if dg['name'] == selected_name), None)
-    if 'description' in selected_datagroup:
+        if selected_datagroup:
+            # Get source of truth and subscribers for this data group
+            hierarchy_entry = next((item for item in hierarchy if item['datagroup'] == selected_name), None)
+            if hierarchy_entry:
+                source_of_truth = hierarchy_entry.get('source_of_truth')
+                subscribers = hierarchy_entry.get('subscribers', [])
+
+    if selected_datagroup and 'description' in selected_datagroup:
         description = selected_datagroup['description']
-    return render_template('update_datagroup.html', datagroups=datagroups, selected_datagroup=selected_datagroup, description=description)
+        
+    return render_template(
+        'update_datagroup.html', 
+        selected_datagroup=selected_datagroup, 
+        description=description, 
+        source_of_truth=source_of_truth, 
+        subscribers=subscribers
+    )
 
 # App route for importing values into an existing datagroup
 # App route for importing values into an existing datagroup
@@ -589,6 +591,188 @@ def update_device_credentials():
         else:
             flash('Device not found!')
             return redirect(url_for('big_ips'))
+
+@app.route('/set_source_of_truth', methods=['POST'])
+def set_source_of_truth():
+    selected_datagroups = request.form.getlist('datagroups')
+    
+    if not selected_datagroups:
+        flash('No data groups selected.')
+        return redirect(url_for('index'))
+
+    if request.method == 'POST' and 'big_ip' in request.form:
+
+        big_ip = request.form.get('big_ip')
+        if not big_ip:
+            flash('Please select a BIG-IP to be the source of truth.')
+            return redirect(url_for('set_source_of_truth'))
+
+        hierarchy = read_hierarchy()
+
+        print(type(selected_datagroups))
+                
+        for dg_name in selected_datagroups:
+            # Check if the datagroup already exists in the hierarchy
+            existing_entry = next((item for item in hierarchy if item['datagroup'] == dg_name), None)
+            if existing_entry:
+                existing_entry['source_of_truth'] = big_ip
+            else:
+                # Add a new entry for the datagroup
+                hierarchy.append({
+                    "datagroup": dg_name,
+                    "source_of_truth": big_ip,
+                    "subscribers": []
+                })
+                
+        write_hierarchy(hierarchy)
+        flash('Source of Truth set successfully for selected datagroups!')
+        return redirect(url_for('index'))
+
+    # If no BIG-IP is selected yet, show the selection form
+    devices = read_json(DEVICES_FILE)
+    return render_template('set_source_of_truth.html', selected_datagroups=selected_datagroups, devices=devices)
+
+@app.route('/set_subscribers', methods=['POST'])
+def set_subscribers():
+    selected_datagroups = request.form.getlist('datagroups')
+
+    if not selected_datagroups:
+        flash('No data groups selected.')
+        return redirect(url_for('index'))
+
+    hierarchy = read_hierarchy()
+
+    if 'subscribers' in request.form:
+        selected_subscribers = request.form.getlist('subscribers')
+        if not selected_subscribers:
+            flash('Please select at least one BIG-IP to be a subscriber.')
+            return redirect(url_for('set_subscribers'))
+
+        for datagroup_name in selected_datagroups:
+            # Find the entry for the current datagroup
+            existing_entry = next((item for item in hierarchy if item['datagroup'] == datagroup_name), None)
+            if existing_entry:
+                existing_entry['subscribers'] = selected_subscribers
+            else:
+                flash(f'Data group {datagroup_name} does not have a source of truth set.')
+                return redirect(url_for('index'))
+
+        write_hierarchy(hierarchy)
+        flash('Subscribers set successfully for selected datagroups!')
+        return redirect(url_for('index'))
+
+    # Identify the source of truth for the first selected datagroup (assuming all have the same source of truth)
+    source_of_truth = None
+    if selected_datagroups:
+        datagroup_name = selected_datagroups[0]
+        entry = next((item for item in hierarchy if item['datagroup'] == datagroup_name), None)
+        source_of_truth = entry.get('source_of_truth') if entry else None
+
+    devices = read_json(DEVICES_FILE)
+    return render_template('set_subscribers.html', selected_datagroups=selected_datagroups, devices=devices, source_of_truth=source_of_truth)
+
+@app.route('/view_differences/<datagroup_name>', methods=['GET'])
+def view_differences(datagroup_name):
+    hierarchy = read_hierarchy()
+    entry = next((item for item in hierarchy if item['datagroup'] == datagroup_name), None)
+    
+    if not entry or not entry.get('differences'):
+        flash('No differences found or data group not found.')
+        return redirect(url_for('index'))
+    
+    differences = entry['differences']
+    return render_template('view_differences.html', datagroup=datagroup_name, differences=differences)
+
+from datetime import datetime
+
+@app.route('/check_differences', methods=['POST'])
+def check_differences():
+    selected_datagroups = request.form.getlist('datagroups')
+    
+    if not selected_datagroups:
+        flash('No data groups selected.')
+        return redirect(url_for('index'))
+
+    devices = read_json(DEVICES_FILE)
+    hierarchy = read_hierarchy()
+
+    for datagroup_name in selected_datagroups:
+        entry = next((item for item in hierarchy if item['datagroup'] == datagroup_name), None)
+        if not entry:
+            flash(f"No source of truth found for data group: {datagroup_name}")
+            continue
+        
+        source_of_truth = entry.get('source_of_truth')
+        subscribers = entry.get('subscribers', [])
+
+        source_data = fetch_datagroup_from_bigip(devices, source_of_truth, datagroup_name)
+        if not source_data:
+            flash(f"Failed to fetch source data for {datagroup_name}")
+            continue
+
+        all_differences = []
+
+        for subscriber in subscribers:
+            subscriber_data = fetch_datagroup_from_bigip(devices, subscriber, datagroup_name)
+            if not subscriber_data:
+                flash(f"Failed to fetch data for {datagroup_name} from {subscriber}")
+                continue
+
+            # Compare source data with subscriber data
+            diff_records = compare_datagroup_records(source_data.get('records', []), subscriber_data.get('records', []))
+
+            if diff_records:
+                all_differences.append({
+                    'subscriber_name': subscriber,
+                    'missing_in_subscriber': diff_records['missing_in_subscriber'],
+                    'extra_in_subscriber': diff_records['extra_in_subscriber'],
+                    'mismatched_records': diff_records['mismatched_records'],
+                })
+
+        # Update entry with differences and last check time
+        if all_differences:
+            entry['differences'] = all_differences
+            entry['in_sync'] = False
+        else:
+            entry.pop('differences', None)  # Remove differences if no differences are found
+            entry['in_sync'] = True
+
+        entry['last_checked'] = datetime.now(timezone.utc).isoformat()
+
+    write_hierarchy(hierarchy)
+
+    flash('Differences checked successfully.')
+    return redirect(url_for('index'))
+
+def compare_datagroup_records(source_records, subscriber_records):
+    """
+    Compare the records between source of truth and subscriber, and return the differences.
+    """
+    differences = {
+        'missing_in_subscriber': [],
+        'extra_in_subscriber': [],
+        'mismatched_records': []
+    }
+
+    source_dict = {record['name']: record['data'] for record in source_records}
+    subscriber_dict = {record['name']: record['data'] for record in subscriber_records}
+
+    # Check for missing records in the subscriber
+    for name, data in source_dict.items():
+        if name not in subscriber_dict:
+            differences['missing_in_subscriber'].append({'name': name, 'data': data})
+        elif source_dict[name] != subscriber_dict[name]:
+            differences['mismatched_records'].append({'name': name, 'source_data': data, 'subscriber_data': subscriber_dict[name]})
+
+    # Check for extra records in the subscriber
+    for name, data in subscriber_dict.items():
+        if name not in source_dict:
+            differences['extra_in_subscriber'].append({'name': name, 'data': data})
+
+    if any(differences.values()):
+        return differences
+    else:
+        return None
 
 # App route to browsing datagroups on the BIG-IP
 @app.route('/browse_datagroups/<device_name>', methods=['GET'])
@@ -809,5 +993,55 @@ def deploy_datagroups():
     
     return render_template('deploy_datagroups.html', devices=devices, datagroups=datagroups)
 
+@app.route('/global_settings', methods=['GET', 'POST'])
+def global_settings():
+    if request.method == 'POST':
+        dns_resolver = request.form.get('resolver', '').strip()
+        
+        if not dns_resolver:
+            flash('Please enter a DNS resolver.')
+            return redirect(url_for('global_settings'))
+                
+        # Validate if the DNS resolver is a valid IPv4 or IPv6 address
+        try:
+            ipaddress.ip_address(dns_resolver)
+            save_dns_resolver([dns_resolver])  # Save as a list to maintain compatibility with the saving/loading functions
+            flash('DNS Resolver saved successfully!')
+        except ValueError:
+            flash('Invalid DNS resolver. Please enter a valid IPv4 or IPv6 address.')
+        
+        return redirect(url_for('global_settings'))
+
+    # Load the current DNS resolver
+    dns_resolver = load_dns_resolver()
+    dns_resolver = dns_resolver[0] if dns_resolver else ''
+    return render_template('global_settings.html', dns_resolver=dns_resolver)
+
+@app.route('/save_dns_resolver', methods=['POST'])
+def save_dns_resolver(dns_resolver):
+
+    # Save the resolver to a configuration file or database
+    save_dns_resolver_to_config(dns_resolver)
+
+    flash('DNS resolver updated successfully.')
+    return redirect(url_for('global_settings'))
+        
+
+@app.route('/dns_lookup', methods=['GET', 'POST'])
+def dns_lookup_route():
+    if request.method == 'POST':
+        # Access the JSON data in the request body
+        data = request.json
+        query = data.get('query')
+
+        if query:
+            result = dns_lookup(query)
+            return result
+        else:
+            flash('No query provided for DNS lookup')
+            return jsonify(results=None), 400  # Bad request if no query is provided
+
+    return render_template('dns_lookup.html')
+
 if __name__ == '__main__':
-    app.run(host="127.0.0.1", port=8443, debug=True, ssl_context='adhoc')
+    app.run(host="0.0.0.0", port=8443, debug=True, ssl_context='adhoc')

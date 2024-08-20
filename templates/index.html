@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Data Groups</h2>
+
+<div class="button-container">
 
 <a href="{{ url_for('add_datagroup') }}" class="button" id="create-new-datagroup-button">Create New Data Group</a>
 
@@ -22,45 +23,122 @@
 
 <a href="{{ url_for('deploy_datagroups') }}" class="button yellow-button" id="deploy-datagroups-button">Deploy Data Groups to BIG-IP</a>
 <a href="{{ url_for('remove_datagroup_from_bigips') }}" class="button red-button" id="remove-datagroups-button">Remove Data Groups from BIG-IP</a>
-
-<div class="table-container">
-    <table class="datagroups-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Description</th>
-                <th>Records Count</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for datagroup in datagroups %}
-            <tr>
-                <td><a href="{{ url_for('update_datagroup', name=datagroup.name) }}">{{ datagroup.name }}</a></td>
-                <td>{{ datagroup.type }}</td>
-                <td>{{ datagroup.description }}</td>
-                <td>{{ datagroup.records|length }}</td>
-                <td>
-                    <form action="{{ url_for('export_datagroup_csv') }}" method="post" style="display:inline;">
-                        <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
-                        <button type="submit" class="button">Export CSV</button>
-                    </form>
-                    <form action="{{ url_for('export_datagroup_json') }}" method="post" style="display:inline;">
-                        <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
-                        <button type="submit" class="button">Export JSON</button>
-                    </form>
-                    <form action="{{ url_for('remove_datagroup') }}" method="post" style="display:inline;">
-                        <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
-                        <button type="submit" class="button red-button" onclick="return confirm('Are you sure you want to delete this data group?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
 
+<h2>Data Groups</h2>
 
+<form id="datagroups-form" method="post">
+    <div class="table-container">
+        <table class="datagroups-table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all"></th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Records Count</th>
+                    <th>Source of Truth</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for datagroup in datagroups %}
+                <tr>
+                    <td><input type="checkbox" name="datagroups" value="{{ datagroup.name }}"></td>
+                    <td><a href="{{ url_for('update_datagroup', name=datagroup.name) }}">{{ datagroup.name }}</a></td>
+                    <td>{{ datagroup.type }}</td>
+                    <td>{{ datagroup.description }}</td>
+                    <td>{{ datagroup.records|length }}</td>
+                    <td>
+                        {% set sot = hierarchy | selectattr('datagroup', 'equalto', datagroup.name) | list %}
+                        {% set diff = sot[0]['differences'] if sot and sot[0] and 'differences' in sot[0] else None %}
+                        {% set last_checked = sot[0]['last_checked'] if sot and sot[0] and 'last_checked' in sot[0] else None %}
+                        {% set in_sync = sot[0]['in_sync'] if sot and sot[0] and 'in_sync' in sot[0] else False %}
+                        
+                        {{ sot[0].source_of_truth if sot and sot[0] and 'source_of_truth' in sot[0] else '<None Specified>' }}
+                        <br>
+                        {% if diff %}
+                            <a href="{{ url_for('view_differences', datagroup_name=datagroup.name) }}">View Differences</a>
+                        {% elif sot and sot[0] and 'in_sync' in sot[0] %}
+                            <span style="font-weight: bold; color: darkgreen;">In Sync</span>
+                        {% else %}
+                        {% endif %}
+                        <br>
+                        {% if last_checked %}
+                            {% set time_since_check = (now - last_checked) %}
+                            {{ time_since_check.days * 24 + time_since_check.seconds // 3600 }} hours, {{ (time_since_check.seconds // 60) % 60 }} minutes ago
+                        {% endif %}
+                    </td>
+                    
+                    
+                    
+                                        <td>
+                        <form action="{{ url_for('export_datagroup_csv') }}" method="post" style="display:inline;">
+                            <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
+                            <button type="submit" class="button">Export CSV</button>
+                        </form>
+                        <form action="{{ url_for('export_datagroup_json') }}" method="post" style="display:inline;">
+                            <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
+                            <button type="submit" class="button">Export JSON</button>
+                        </form>
+                        <form action="{{ url_for('remove_datagroup') }}" method="post" style="display:inline;">
+                            <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
+                            <button type="submit" class="button red-button" onclick="return confirm('Are you sure you want to delete this data group?')">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>    
+</form>
+<div class="floating-button-container">
+    <button type="button" class="button blue-button" id="define-source-of-truth-button">Define Source of Truth</button>
+    <button type="button" class="button green-button" id="set-subscribers-button">Set Subscribers</button>
+    <button type="button" class="button orange-button" id="check-differences-button">Check Differences</button>
+</div>
+
+<script>
+    
+    document.getElementById('select-all').addEventListener('change', function() {
+        var checkboxes = document.querySelectorAll('input[name="datagroups"]');
+        for (var checkbox of checkboxes) {
+            checkbox.checked = this.checked;
+        }
+    });
+
+    document.getElementById('check-differences-button').addEventListener('click', function() {
+        var form = document.getElementById('datagroups-form');
+        var selectedDatagroups = document.querySelectorAll('input[name="datagroups"]:checked');
+        if (selectedDatagroups.length > 0) {
+            form.action = "{{ url_for('check_differences') }}";
+            form.submit();
+        } else {
+            alert("Please select at least one data group.");
+        }
+    });
+    
+    document.getElementById('define-source-of-truth-button').addEventListener('click', function() {
+        var form = document.getElementById('datagroups-form');
+        var selectedDatagroups = document.querySelectorAll('input[name="datagroups"]:checked');
+        if (selectedDatagroups.length > 0) {
+            form.action = "{{ url_for('set_source_of_truth') }}";
+            form.submit();
+        } else {
+            alert("Please select at least one data group.");
+        }
+    });
+
+    document.getElementById('set-subscribers-button').addEventListener('click', function() {
+        var form = document.getElementById('datagroups-form');
+        var selectedDatagroups = document.querySelectorAll('input[name="datagroups"]:checked');
+        if (selectedDatagroups.length > 0) {
+            form.action = "{{ url_for('set_subscribers') }}";
+            form.submit();
+        } else {
+            alert("Please select at least one data group.");
+        }
+    });
+</script>
 
 {% endblock %}

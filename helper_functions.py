@@ -2,9 +2,13 @@ import socket
 import json
 import requests
 import csv
+import ipaddress
+import os
+import re
 from requests.auth import HTTPBasicAuth
 from encryption import decrypt_password
-from config import DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS
+from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS, HIERARCHY_FILE, DNS_RESOLVERS_FILE
+from flask import flash
 
 # Constants
 ALLOWED_EXTENSIONS = {'csv', 'json'}
@@ -236,6 +240,13 @@ def fetch_and_filter_datagroup_from_device(device, datagroup_name):
         flash(f'Failed to fetch data group {datagroup_name} from device {device['name']}: {str(e)}')
         return None
 
+def fetch_datagroup_from_bigip(devices, device_name, datagroup_name):
+    device = next((d for d in devices if d['name'] == device_name), None)
+    if not device:
+        return None
+    datagroup = fetch_and_filter_datagroup_from_device(device, datagroup_name)
+    return datagroup
+
 def fetch_datagroups_from_bigip(device):
     try:
         if not test_dns_resolution(device['address']):
@@ -349,3 +360,91 @@ def deploy_datagroup_to_device(device, datagroup):
     except Exception as err:
         flash(f'Error occurred: {err}')
         return False
+
+def read_hierarchy():
+    try:
+        with open(HIERARCHY_FILE, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {"datagroups": {}}
+
+def write_hierarchy(hierarchy):
+    with open(HIERARCHY_FILE, 'w') as file:
+        json.dump(hierarchy, file, indent=4)
+        
+def dns_lookup(ip_or_fqdn):
+
+    # Check if the input contains CIDR notation
+    cidr_match = re.search(r'/(.*)$', ip_or_fqdn)
+    if cidr_match:
+        cidr_value = int(cidr_match.group(1))
+        
+        try:
+            ip_network = ipaddress.ip_network(ip_or_fqdn, strict=False)
+            
+            # Determine if the CIDR value is a network address that we should not query
+            if (isinstance(ip_network, ipaddress.IPv4Network) and cidr_value < 32) or \
+               (isinstance(ip_network, ipaddress.IPv6Network) and cidr_value < 128):
+                return "Cannot perform DNS query on network address"
+
+            # Strip the CIDR notation for further processing
+            ip_or_fqdn = str(ip_network.network_address)
+        except ValueError:
+            return "Invalid IP address or CIDR notation"
+
+    ip_or_fqdn = re.sub(r'/32$', '', ip_or_fqdn)
+    
+    try:
+        # Check if the input is an IP address
+        ip = ipaddress.ip_address(ip_or_fqdn)
+        is_ip = True
+    except ValueError:
+        # If it's not an IP, we assume it's an FQDN
+        is_ip = False
+
+    if is_ip:
+        # Reverse lookup
+        try:
+            reverse_name = socket.gethostbyaddr(ip.exploded)
+            result = reverse_name[0]  # The primary hostname
+        except socket.herror:
+            result = 'No reverse DNS found'
+        except Exception as e:
+            result = f'Error: {e}'
+    else:
+        # Forward lookup
+        try:
+            ipv4_addresses = socket.gethostbyname_ex(ip_or_fqdn)[2]
+            result = ipv4_addresses
+        except socket.gaierror:
+            result = 'No A record found'
+        except Exception as e:
+            result = f'Error: {e}'
+
+        try:
+            ipv6_addresses = socket.getaddrinfo(ip_or_fqdn, None, socket.AF_INET6)
+            result = [item[4][0] for item in ipv6_addresses]
+        except socket.gaierror:
+            result = 'No AAAA record found'
+        except Exception as e:
+            result = f'Error: {e}'
+
+    return result
+
+def load_dns_resolver():
+    """
+    Load the DNS resolver from the configuration file.
+    Returns a list of resolver.
+    """
+    if os.path.exists(DNS_RESOLVERS_FILE):
+        with open(DNS_RESOLVERS_FILE, 'r') as f:  # Open the file in read mode
+            return json.load(f)
+    else:
+        return []
+
+def save_dns_resolver_to_config(dns_resolver):
+    """
+    Save the DNS resolver to the configuration file.
+    """
+    with open(DNS_RESOLVERS_FILE, 'w') as f:
+        json.dump(dns_resolver, f)

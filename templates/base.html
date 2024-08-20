@@ -76,7 +76,7 @@
             <ul>
                 <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Data Groups</a></li>
                 <li><a href="{{ url_for('big_ips') }}" class="{% if request.endpoint == 'big_ips' %}active{% endif %}">BIG-IPs</a></li>
-            </ul>
+                <li><a href="{{ url_for('global_settings') }}" class="{% if request.endpoint == 'global_settings' %}active{% endif %}">Global Settings</a></li> <!-- Added Global Settings -->            </ul>
         </nav>
         <!-- Main content area -->
         <div class="content">
