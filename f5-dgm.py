@@ -955,35 +955,36 @@ def deploy_datagroups():
 @app.route('/global_settings', methods=['GET', 'POST'])
 def global_settings():
     if request.method == 'POST':
-        dns_resolver = request.form.get('resolver', '')
-        save_dns_resolvers([dns_resolver])  # Save as a list to maintain compatibility with the saving/loading functions
-        flash('DNS Resolver saved successfully!')
+        dns_resolver = request.form.get('resolver', '').strip()
+        
+        if not dns_resolver:
+            flash('Please enter a DNS resolver.')
+            return redirect(url_for('global_settings'))
+                
+        # Validate if the DNS resolver is a valid IPv4 or IPv6 address
+        try:
+            ipaddress.ip_address(dns_resolver)
+            save_dns_resolver([dns_resolver])  # Save as a list to maintain compatibility with the saving/loading functions
+            flash('DNS Resolver saved successfully!')
+        except ValueError:
+            flash('Invalid DNS resolver. Please enter a valid IPv4 or IPv6 address.')
+        
         return redirect(url_for('global_settings'))
 
     # Load the current DNS resolver
-    dns_resolvers = load_dns_resolvers()
-    dns_resolver = dns_resolvers[0] if dns_resolvers else ''
+    dns_resolver = load_dns_resolver()
+    dns_resolver = dns_resolver[0] if dns_resolver else ''
     return render_template('global_settings.html', dns_resolver=dns_resolver)
 
-@app.route('/save_dns_resolvers', methods=['POST'])
-def save_dns_resolvers():
-    # Get the DNS resolvers from the form
-    dns_resolver = request.form.get('dns_resolver')
+@app.route('/save_dns_resolver', methods=['POST'])
+def save_dns_resolver(dns_resolver):
 
-    # Save the resolvers to a configuration file or database
-    save_dns_resolvers_to_config(dns_resolvers)
+    # Save the resolver to a configuration file or database
+    save_dns_resolver_to_config(dns_resolver)
 
     flash('DNS resolver updated successfully.')
     return redirect(url_for('global_settings'))
-
-def save_dns_resolvers(dns_resolvers):
-    try:
-        with open('dns_resolvers.json', 'w') as f:
-            json.dump(dns_resolvers, f)
-    except Exception as e:
-        print(f"Failed to save DNS resolvers: {e}")
         
-from flask import request, jsonify, render_template, flash
 
 @app.route('/dns_lookup', methods=['GET', 'POST'])
 def dns_lookup_route():
@@ -1002,4 +1003,4 @@ def dns_lookup_route():
     return render_template('dns_lookup.html')
 
 if __name__ == '__main__':
-    app.run(host="127.0.0.1", port=8443, debug=True, ssl_context='adhoc')
+    app.run(host="0.0.0.0", port=8443, debug=True, ssl_context='adhoc')
