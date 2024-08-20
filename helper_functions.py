@@ -4,6 +4,7 @@ import requests
 import csv
 import ipaddress
 import os
+import re
 from requests.auth import HTTPBasicAuth
 from encryption import decrypt_password
 from config import DEVICES_FILE, DATAGROUPS_FILE, TMOS_BUILT_IN_DATA_GROUPS, HIERARCHY_FILE, DNS_RESOLVERS_FILE
@@ -372,8 +373,27 @@ def write_hierarchy(hierarchy):
         json.dump(hierarchy, file, indent=4)
         
 def dns_lookup(ip_or_fqdn):
-    results = {}
 
+    # Check if the input contains CIDR notation
+    cidr_match = re.search(r'/(.*)$', ip_or_fqdn)
+    if cidr_match:
+        cidr_value = int(cidr_match.group(1))
+        
+        try:
+            ip_network = ipaddress.ip_network(ip_or_fqdn, strict=False)
+            
+            # Determine if the CIDR value is a network address that we should not query
+            if (isinstance(ip_network, ipaddress.IPv4Network) and cidr_value < 32) or \
+               (isinstance(ip_network, ipaddress.IPv6Network) and cidr_value < 128):
+                return "Cannot perform DNS query on network address"
+
+            # Strip the CIDR notation for further processing
+            ip_or_fqdn = str(ip_network.network_address)
+        except ValueError:
+            return "Invalid IP address or CIDR notation"
+
+    ip_or_fqdn = re.sub(r'/32$', '', ip_or_fqdn)
+    
     try:
         # Check if the input is an IP address
         ip = ipaddress.ip_address(ip_or_fqdn)
@@ -386,30 +406,30 @@ def dns_lookup(ip_or_fqdn):
         # Reverse lookup
         try:
             reverse_name = socket.gethostbyaddr(ip.exploded)
-            results['reverse'] = reverse_name[0]  # The primary hostname
+            result = reverse_name[0]  # The primary hostname
         except socket.herror:
-            results['reverse'] = 'No reverse DNS found'
+            result = 'No reverse DNS found'
         except Exception as e:
-            results['reverse'] = f'Error: {e}'
+            result = f'Error: {e}'
     else:
         # Forward lookup
         try:
             ipv4_addresses = socket.gethostbyname_ex(ip_or_fqdn)[2]
-            results['A'] = ipv4_addresses
+            result = ipv4_addresses
         except socket.gaierror:
-            results['A'] = 'No A record found'
+            result = 'No A record found'
         except Exception as e:
-            results['A'] = f'Error: {e}'
+            result = f'Error: {e}'
 
         try:
             ipv6_addresses = socket.getaddrinfo(ip_or_fqdn, None, socket.AF_INET6)
-            results['AAAA'] = [item[4][0] for item in ipv6_addresses]
+            result = [item[4][0] for item in ipv6_addresses]
         except socket.gaierror:
-            results['AAAA'] = 'No AAAA record found'
+            result = 'No AAAA record found'
         except Exception as e:
-            results['AAAA'] = f'Error: {e}'
+            result = f'Error: {e}'
 
-    return results
+    return result
 
 def load_dns_resolvers():
     """

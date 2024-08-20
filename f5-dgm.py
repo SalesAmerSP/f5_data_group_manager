@@ -983,12 +983,21 @@ def save_dns_resolvers(dns_resolvers):
     except Exception as e:
         print(f"Failed to save DNS resolvers: {e}")
         
+from flask import request, jsonify, render_template, flash
+
 @app.route('/dns_lookup', methods=['GET', 'POST'])
 def dns_lookup_route():
     if request.method == 'POST':
-        query = request.form.get('query')
-        results = dns_lookup(query)
-        return render_template('dns_results.html', query=query, results=results)
+        # Access the JSON data in the request body
+        data = request.json
+        query = data.get('query')
+
+        if query:
+            result = dns_lookup(query)
+            return result
+        else:
+            flash('No query provided for DNS lookup')
+            return jsonify(results=None), 400  # Bad request if no query is provided
 
     return render_template('dns_lookup.html')
 
