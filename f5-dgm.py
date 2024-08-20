@@ -640,13 +640,13 @@ def set_subscribers():
         flash('No data groups selected.')
         return redirect(url_for('index'))
 
+    hierarchy = read_hierarchy()
+
     if 'subscribers' in request.form:
         selected_subscribers = request.form.getlist('subscribers')
         if not selected_subscribers:
             flash('Please select at least one BIG-IP to be a subscriber.')
             return redirect(url_for('set_subscribers'))
-
-        hierarchy = read_hierarchy()
 
         for datagroup_name in selected_datagroups:
             # Find the entry for the current datagroup
@@ -661,8 +661,15 @@ def set_subscribers():
         flash('Subscribers set successfully for selected datagroups!')
         return redirect(url_for('index'))
 
+    # Identify the source of truth for the first selected datagroup (assuming all have the same source of truth)
+    source_of_truth = None
+    if selected_datagroups:
+        datagroup_name = selected_datagroups[0]
+        entry = next((item for item in hierarchy if item['datagroup'] == datagroup_name), None)
+        source_of_truth = entry.get('source_of_truth') if entry else None
+
     devices = read_json(DEVICES_FILE)
-    return render_template('set_subscribers.html', selected_datagroups=selected_datagroups, devices=devices)
+    return render_template('set_subscribers.html', selected_datagroups=selected_datagroups, devices=devices, source_of_truth=source_of_truth)
 
 @app.route('/view_differences/<datagroup_name>', methods=['GET'])
 def view_differences(datagroup_name):

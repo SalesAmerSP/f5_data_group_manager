@@ -1,4 +1,6 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+
+{% block content %}
 <h2>Set Subscribers</h2>
 
 <p>Select BIG-IP devices to subscribe to the selected datagroups:</p>
@@ -8,18 +10,37 @@
   <input type="hidden" name="datagroups" value="{{ datagroup }}" />
   {% endfor %}
 
-  <div>
-    <label>Select Subscribers:</label>
-    <br />
-    {% for device in devices %}
-    <input type="checkbox" name="subscribers" value="{{ device.name }}" /> {{
-    device.name }} ({{ device.address }})<br />
-    {% endfor %}
+  <div class="table-container">
+    <table class="datagroups-table">
+      <thead>
+        <tr>
+          <th>Select</th>
+          <th>Device Name</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for device in devices %}
+        <tr>
+          <td>
+            {% if device.name != source_of_truth %}
+            <input type="checkbox" name="subscribers" value="{{ device.name }}" />
+            {% else %}
+            <span style="color: gray;">(Source of Truth)</span>
+            {% endif %}
+          </td>
+          <td>{{ device.name }}</td>
+          <td>{{ device.address }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 
-  <button type="submit" class="button">Set Subscribers</button>
+  <div style="margin-top: 20px;">
+    <button type="submit" class="button">Set Subscribers</button>
+    <a href="{{ url_for('index') }}" class="button">Cancel</a>
+  </div>
 </form>
-
-<a href="{{ url_for('index') }}" class="button">Cancel</a>
 
 {% endblock %}
