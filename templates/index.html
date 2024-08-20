@@ -50,14 +50,29 @@
                     <td>{{ datagroup.description }}</td>
                     <td>{{ datagroup.records|length }}</td>
                     <td>
-                        {% set sot = hierarchy | selectattr('datagroup', 'equalto', datagroup.name) | map(attribute='source_of_truth') | list %}
-                        {% set diff = hierarchy | selectattr('datagroup', 'equalto', datagroup.name) | map(attribute='differences') | list %}
-                        {{ sot[0] if sot else '<None Specified>' }}
-                        {% if diff and diff[0] %}
-                            <br> <a href="{{ url_for('view_differences', datagroup_name=datagroup.name) }}">View Differences</a>
+                        {% set sot = hierarchy | selectattr('datagroup', 'equalto', datagroup.name) | list %}
+                        {% set diff = sot[0]['differences'] if sot and sot[0] and 'differences' in sot[0] else None %}
+                        {% set last_checked = sot[0]['last_checked'] if sot and sot[0] and 'last_checked' in sot[0] else None %}
+                        {% set in_sync = sot[0]['in_sync'] if sot and sot[0] and 'in_sync' in sot[0] else False %}
+                        
+                        {{ sot[0].source_of_truth if sot and sot[0] and 'source_of_truth' in sot[0] else '<None Specified>' }}
+                        <br>
+                        {% if diff %}
+                            <a href="{{ url_for('view_differences', datagroup_name=datagroup.name) }}">View Differences</a>
+                        {% elif sot and sot[0] and 'in_sync' in sot[0] %}
+                            <span style="font-weight: bold; color: darkgreen;">In Sync</span>
+                        {% else %}
+                        {% endif %}
+                        <br>
+                        {% if last_checked %}
+                            {% set time_since_check = (now - last_checked) %}
+                            {{ time_since_check.days * 24 + time_since_check.seconds // 3600 }} hours, {{ (time_since_check.seconds // 60) % 60 }} minutes ago
                         {% endif %}
                     </td>
-                    <td>
+                    
+                    
+                    
+                                        <td>
                         <form action="{{ url_for('export_datagroup_csv') }}" method="post" style="display:inline;">
                             <input type="hidden" name="datagroup_name" value="{{ datagroup.name }}">
                             <button type="submit" class="button">Export CSV</button>
